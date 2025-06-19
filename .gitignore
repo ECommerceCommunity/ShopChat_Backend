@@ -7,10 +7,6 @@ Thumbs.db             # Windows system files
 *.zip                 # Archive files (e.g., generated distributions)
 *.tar.gz              # Archive files
 
-# Additions for sensitive configuration files
-.env
-application.properties
-
 # Gradle
 .gradle/
 build/
