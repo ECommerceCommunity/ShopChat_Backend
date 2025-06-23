@@ -34,7 +34,7 @@ jobs:
         path: build/test-results/test/*.xml # Gradle의 JUnit 테스트 결과 XML 파일 경로
 
     - name: Analyze with SonarQube
-      run: ./gradlew sonarqube -Dsonar.projectKey=YOUR_PROJECT_KEY
+      run: ./gradlew sonarqube -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # PR 정보 등을 가져오기 위해 필요
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarQube 인증 토큰
