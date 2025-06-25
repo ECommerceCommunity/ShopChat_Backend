@@ -1,4 +1,4 @@
-heplugins {
+plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.3.12'
 	id 'io.spring.dependency-management' version '1.1.7'
@@ -30,7 +30,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
-	compileOnly 'org.projectlombok:lombok'
+	compileOnly 'org.projectlombok:lombok:1.18.30'
 
 	// devtools 배포 시에는 삭제
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
