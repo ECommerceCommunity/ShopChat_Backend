@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor
@@ -15,4 +18,7 @@ public class Color {
 
     private String name;
     private String imageUrl;
+
+    @OneToMany(mappedBy = "color", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductColor> productColors = new ArrayList<>();
 }

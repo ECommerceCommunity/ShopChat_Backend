@@ -16,11 +16,6 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @PostMapping
-    public ResponseEntity<Long> create(@RequestBody ProductCreateRequest request) {
-        return ResponseEntity.ok(productService.create(request));
-    }
-
     @GetMapping
     public ResponseEntity<List<ProductResponse>> getAll() {
         return ResponseEntity.ok(productService.findAll());

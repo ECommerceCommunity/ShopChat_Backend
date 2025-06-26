@@ -5,9 +5,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "product")
+@Table(name = "products")
 @Getter
 @NoArgsConstructor
 public class Product {
@@ -20,18 +22,12 @@ public class Product {
     @Column(name = "store_id")
     private Long storeId;
 
-    @Column(name = "user_id")
-    private Long userId;
-
     private String name;
 
     @Column(name = "shoes_type")
     private String shoesType;
 
     private BigDecimal price;
-
-    @Column(name = "size_stock_list", columnDefinition = "TEXT")
-    private String sizeStockList;
 
     private String gender;
 
@@ -44,21 +40,30 @@ public class Product {
     @Column(name = "detail_image_urls", columnDefinition = "TEXT")
     private String detailImageUrls;
 
-    @Column(name = "color_info", columnDefinition = "TEXT")
-    private String colorInfo;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductColor> productColors = new ArrayList<>();
 
-    public Product(Long storeId, Long userId, String name, String shoesType, BigDecimal price, String sizeStockList,
-                   String gender, String mainImageUrls, String detailImageUrls, String colorInfo) {
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductSize> productSizes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductDiscount> productDiscounts = new ArrayList<>();
+
+    // 생성자
+    public Product(Long storeId, String name, String shoesType, BigDecimal price,
+                   String gender, String mainImageUrls, String detailImageUrls) {
         this.storeId = storeId;
-        this.userId = userId;
         this.name = name;
         this.shoesType = shoesType;
         this.price = price;
-        this.sizeStockList = sizeStockList;
         this.gender = gender;
         this.mainImageUrls = mainImageUrls;
         this.detailImageUrls = detailImageUrls;
-        this.colorInfo = colorInfo;
         this.numbersLikes = 0;
+    }
+
+    public void addProductDiscount(ProductDiscount discount) {
+        productDiscounts.add(discount);
+        discount.setProduct(this); // 양방향 관계 설정
     }
 }
