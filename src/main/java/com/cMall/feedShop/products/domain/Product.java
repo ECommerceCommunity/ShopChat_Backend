@@ -19,9 +19,6 @@ public class Product {
     @Column(name = "product_id")
     private Long id;
 
-    @Column(name = "store_id")
-    private Long storeId;
-
     private String name;
 
     @Column(name = "shoes_type")
@@ -50,9 +47,8 @@ public class Product {
     private List<ProductDiscount> productDiscounts = new ArrayList<>();
 
     // 생성자
-    public Product(Long storeId, String name, String shoesType, BigDecimal price,
+    public Product(String name, String shoesType, BigDecimal price,
                    String gender, String mainImageUrls, String detailImageUrls) {
-        this.storeId = storeId;
         this.name = name;
         this.shoesType = shoesType;
         this.price = price;

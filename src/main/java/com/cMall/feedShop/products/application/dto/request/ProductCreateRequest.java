@@ -10,7 +10,6 @@ import java.util.List;
 @NoArgsConstructor
 public class ProductCreateRequest {
 
-    private Long storeId;
     private String name;
     private String shoesType;
     private BigDecimal price;

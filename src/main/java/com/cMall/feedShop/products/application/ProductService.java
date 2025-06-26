@@ -25,7 +25,6 @@ public class ProductService {
     @Transactional
     public Long create(ProductCreateRequest req) {
         Product product = new Product(
-                req.getStoreId(),
                 req.getName(),
                 req.getShoesType(),
                 req.getPrice(),
