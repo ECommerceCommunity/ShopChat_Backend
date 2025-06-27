@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "product_color")
+@Table(name = "product_colors")
 @Getter
 @NoArgsConstructor
 public class ProductColor {

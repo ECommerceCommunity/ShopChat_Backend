@@ -1,6 +1,7 @@
 package com.cMall.feedShop.stores.domain;
 
 import com.cMall.feedShop.products.domain.Product;
+import com.cMall.feedShop.user.domain.model.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,10 +35,15 @@ public class Store {
     @OneToMany(mappedBy = "store")
     private List<Product> products = new ArrayList<>();
 
-    public Store(String description, String logo, String name) {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    public Store(String description, String logo, String name, User user) {
         this.description = description;
         this.logo = logo;
         this.name = name;
+        this.user = user;
         this.numbersLikes = 0;
     }
 

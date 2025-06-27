@@ -7,22 +7,33 @@ import com.cMall.feedShop.stores.application.dto.request.StoreCreateRequest;
 import com.cMall.feedShop.stores.application.dto.response.StoreResponse;
 import com.cMall.feedShop.stores.domain.Store;
 import com.cMall.feedShop.stores.domain.repository.StoreRepository;
+import com.cMall.feedShop.user.domain.model.User;
+import com.cMall.feedShop.user.domain.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
 public class StoreService {
 
     private final StoreRepository storeRepository;
+    private final UserRepository userRepository;
 
     public StoreResponse createStore(StoreCreateRequest request) {
+        // ✅ 1. userId로 유저 조회
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+
+        // ✅ 2. Store 생성 시 User 설정
         Store store = new Store(
                 request.getDescription(),
                 request.getLogo(),
-                request.getName()
+                request.getName(),
+                user // 생성자 또는 setter로 설정
         );
 
+        // ✅ 3. 저장
         Store saved = storeRepository.save(store);
 
+        // ✅ 4. 응답 반환
         return new StoreResponse(
                 saved.getId(),
                 saved.getName(),

@@ -1,11 +1,14 @@
 package com.cMall.feedShop.stores.application.dto.request;
 
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@Setter
+@NoArgsConstructor
 public class StoreCreateRequest {
+
+    private Long userId;
+
     private String name;
     private String description;
     private String logo;

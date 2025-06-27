@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "colors")
 @Getter
 @NoArgsConstructor
 public class Color {
