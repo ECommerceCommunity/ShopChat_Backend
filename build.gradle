@@ -2,6 +2,8 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.3.12'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.sonarqube' version '5.1.0.4882'
+	id 'jacoco'
 }
 
 group = 'com.cMall'
@@ -40,9 +42,53 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation 'com.h2database:h2'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.github.cdimascio:java-dotenv:5.2.2'
+
+	// JWT 라이브러리 추가
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+jacoco {
+	toolVersion = "0.8.11" // 최신 Jacoco 버전 확인 후 적용
+}
+
+jacocoTestReport {
+	dependsOn test // jacocoTestReport 태스크가 test 태스크 실행 이후에 실행되도록 의존성 설정
+	reports {
+		xml.required = true // SonarCloud가 읽을 수 있도록 XML 리포트 필수
+		csv.required = false
+		html.required = true // 사람이 읽기 쉬운 HTML 리포트도 생성 (선택 사항)
+	}
+	// 보고서가 생성될 경로 설정 (SonarCloud에서 이 경로를 참조하게 됨)
+	// destinationFile = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml") // 기본 경로와 동일하면 명시하지 않아도 됨
+	// html.outputLocation = file("${buildDir}/reports/jacoco/html") // HTML 리포트 출력 경로 (선택 사항)
+}
+
+// SonarCloud 설정 추가
+sonarqube {
+	properties {
+		property "sonar.projectKey", "ECommerceCommunity_FeedShop_Backend"
+		property "sonar.organization", "ecommercecommunity"
+
+		// 코드 커버리지를 Jacoco 리포트와 연동
+		property "sonar.java.coveragePlugin", "jacoco"
+		// Jacoco XML 리포트 파일의 경로를 SonarCloud에 알려줍니다.
+		// Jacoco 설정을 통해 생성되는 기본 경로와 일치하는지 확인하세요.
+		property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+
+		// 분석에서 제외할 파일이나 디렉토리를 지정할 수 있습니다. (선택 사항)
+		// property "sonar.exclusions", "**/generated/**, **/*.html"
+		// property "sonar.test.exclusions", "**/*Test.java" // 테스트 파일 제외 예시
+	}
 }
