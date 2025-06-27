@@ -80,6 +80,7 @@ sonarqube {
 	properties {
 		property "sonar.projectKey", "ECommerceCommunity_FeedShop_Backend"
 		property "sonar.organization", "ecommercecommunity"
+		property "sonar.host.url", "https://sonarcloud.io"
 
 		// 코드 커버리지를 Jacoco 리포트와 연동
 		property "sonar.java.coveragePlugin", "jacoco"

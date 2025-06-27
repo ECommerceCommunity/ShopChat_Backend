@@ -60,7 +60,8 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/auth/signup", "/public/**").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/signup", "/public/**",
+                                "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // 폼 로그인 및 HTTP Basic 인증은 사용하지 않음

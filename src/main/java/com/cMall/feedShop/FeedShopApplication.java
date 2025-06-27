@@ -12,9 +12,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 public class FeedShopApplication {
 
 	public static void main(String[] args) {
-		Dotenv dotenv = Dotenv.load(); // .env 파일을 로드합니다.
+		Dotenv dotenv = Dotenv.load();
 		dotenv.entries().forEach(entry ->
-				System.setProperty(entry.getKey(), entry.getValue()) // .env의 키-값 쌍을 시스템 프로퍼티로 설정합니다.
+				System.setProperty(entry.getKey(), entry.getValue())
 		);
 		SpringApplication.run(FeedShopApplication.class, args);
 	}

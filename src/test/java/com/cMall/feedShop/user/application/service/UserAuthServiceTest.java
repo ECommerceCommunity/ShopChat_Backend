@@ -68,7 +68,6 @@ class UserAuthServiceTest {
                 "010-1234-5678",
                 UserRole.ROLE_USER
         );
-        // User 엔티티의 createdAt, updatedAt 등은 Lombok @CreatedDate/@LastModifiedDate에 의해 자동 설정되므로
         // 테스트 객체 생성 시에는 생략하거나 mock 데이터를 직접 설정
         testUser.setId(1L);
         testUser.setCreatedAt(LocalDateTime.now());
@@ -82,16 +81,13 @@ class UserAuthServiceTest {
     @DisplayName("성공적인 로그인 - JWT 토큰 발급 확인")
     void login_success_returnsToken() {
         // given (준비): Mock 객체의 행동 정의
-        // 1. AuthenticationManager가 인증 성공을 반환하도록 설정
         Authentication mockAuthentication = mock(Authentication.class);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(mockAuthentication);
 
-        // 2. userRepository.findByEmail이 사용자를 찾도록 설정
         when(userRepository.findByEmail(loginRequest.getEmail()))
                 .thenReturn(Optional.of(testUser));
 
-        // 3. jwtTokenProvider.generateAccessToken이 더미 토큰을 반환하도록 설정
         when(jwtTokenProvider.generateAccessToken(testUser.getEmail(), testUser.getRole().name()))
                 .thenReturn(dummyToken);
 
@@ -114,7 +110,6 @@ class UserAuthServiceTest {
     @DisplayName("로그인 실패 - 존재하지 않는 회원 (이메일 없음)")
     void login_fail_userNotFound() {
         // given: AuthenticationManager가 UsernameNotFoundException을 던지도록 설정
-        // (CustomUserDetailsService 내부에서 발생하며 AuthenticationManager를 통해 전달됨)
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenThrow(new UsernameNotFoundException("User not found with email: " + loginRequest.getEmail()));
 
