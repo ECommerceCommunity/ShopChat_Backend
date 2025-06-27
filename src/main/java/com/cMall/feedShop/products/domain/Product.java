@@ -1,5 +1,6 @@
 package com.cMall.feedShop.products.domain;
 
+import com.cMall.feedShop.stores.domain.Store;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,9 +21,6 @@ public class Product {
     private Long id;
 
     private String name;
-
-    @Column(name = "shoes_type")
-    private String shoesType;
 
     private BigDecimal price;
 
@@ -46,11 +44,14 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductDiscount> productDiscounts = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")
+    private Store store;
+
     // 생성자
-    public Product(String name, String shoesType, BigDecimal price,
+    public Product(String name, BigDecimal price,
                    String gender, String mainImageUrls, String detailImageUrls) {
         this.name = name;
-        this.shoesType = shoesType;
         this.price = price;
         this.gender = gender;
         this.mainImageUrls = mainImageUrls;

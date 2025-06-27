@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "product_size")
+@Table(name = "shoes")
 @Getter
 @NoArgsConstructor
 public class ProductSize {
@@ -14,18 +14,21 @@ public class ProductSize {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String size;
+    private Integer size;
 
     private Integer stock;
+
+    private String type;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
 
     // 생성자
-    public ProductSize(String size, Integer stock, Product product) {
+    public ProductSize(Integer size, Integer stock, Product product, String type) {
         this.size = size;
         this.stock = stock;
         this.product = product;
+        this.type = type;
     }
 }

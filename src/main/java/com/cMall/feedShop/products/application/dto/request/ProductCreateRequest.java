@@ -11,7 +11,6 @@ import java.util.List;
 public class ProductCreateRequest {
 
     private String name;
-    private String shoesType;
     private BigDecimal price;
     private String gender;
     private String mainImageUrls;
@@ -23,7 +22,8 @@ public class ProductCreateRequest {
     @Getter
     @NoArgsConstructor
     public static class OptionDto {
-        private String size;
+        private Integer size;
         private Integer stock;
+        private String type;
     }
 }

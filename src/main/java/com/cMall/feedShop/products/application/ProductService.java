@@ -26,7 +26,6 @@ public class ProductService {
     public Long create(ProductCreateRequest req) {
         Product product = new Product(
                 req.getName(),
-                req.getShoesType(),
                 req.getPrice(),
                 req.getGender(),
                 req.getMainImageUrls(),
@@ -43,7 +42,12 @@ public class ProductService {
 
         // 옵션(사이즈/재고) 추가
         for (ProductCreateRequest.OptionDto optionDto : req.getOptions()) {
-            ProductSize option = new ProductSize(optionDto.getSize(), optionDto.getStock(), product);
+            ProductSize option = new ProductSize(
+                    optionDto.getSize(),
+                    optionDto.getStock(),
+                    product,
+                    optionDto.getType() // ← 여기에 type 전달
+            );
             product.getProductSizes().add(option);
         }
 
