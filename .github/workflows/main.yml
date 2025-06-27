@@ -1,0 +1,65 @@
+name: Spring Boot CI with Gradle # 워크플로우 이름
+
+on:
+  push:
+    branches: [ "main", "develop" ] # main 또는 develop 브랜치에 푸시될 때 실행
+  pull_request:
+    branches: [ "main", "develop" ] # main 또는 develop 브랜치로 PR 생성/업데이트될 때 실행
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # GITHUB_TOKEN 권한 명시 (PR decoration에 필요)
+    permissions:
+      contents: read
+      pull-requests: write
+      # actions: read # 필요하다면 추가 (워크플로우 자체의 액션 권한)
+      # security-events: write # Dependabot alerts 등 SonarCloud 결과 전송에 필요할 수 있음
+
+    steps:
+    - uses: actions/checkout@v4 # 깃허브 저장소 코드 체크아웃
+      # PR인 경우, PR의 head commit을 가져오도록 fetch-depth를 0으로 설정 (모든 히스토리)
+      # 또는 PR의 대상 브랜치와 현재 브랜치를 모두 가져오도록 설정 (PR 분석에 중요)
+      with:
+        fetch-depth: 0 # Pull Request 분석을 위해 전체 히스토리 필요
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'gradle'
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Build and Test with Gradle # 'clean'으로 이전 빌드 잔여물 제거, 'build'로 컴파일 및 JUnit 테스트 실행
+      run: ./gradlew clean build
+
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: build/test-results/test/*.xml # Gradle의 JUnit 테스트 결과 XML 파일 경로
+
+    - name: Analyze with SonarQube
+      # PR일 경우 SonarQube에 PR 관련 속성을 전달합니다.
+      # SonarCloud GitHub Action은 이 속성들을 자동으로 감지하려 하지만, 명시적으로 지정하면 더 확실합니다.
+      run: |
+        if [ "${{ github.event_name }}" == "pull_request" ]; then
+          ./gradlew sonarqube \
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
+            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
+            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
+            -Dsonar.pullrequest.base=${{ github.base_ref }} \
+            -Dsonar.pullrequest.github.repository=${{ github.repository }} \
+            -Dsonar.pullrequest.provider=GitHub
+        else
+          ./gradlew sonarqube \
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # PR 정보 등을 가져오기 위해 필요
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarQube 인증 토큰
