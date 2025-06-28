@@ -28,6 +28,7 @@ public class ProductService {
                 req.getName(),
                 req.getPrice(),
                 req.getGender(),
+                req.getDescription(),
                 req.getMainImageUrls(),
                 req.getDetailImageUrls()
         );
@@ -46,7 +47,7 @@ public class ProductService {
                     optionDto.getSize(),
                     optionDto.getStock(),
                     product,
-                    optionDto.getType() // ← 여기에 type 전달
+                    optionDto.getType()
             );
             product.getProductSizes().add(option);
         }

@@ -26,6 +26,9 @@ public class Product {
 
     private String gender;
 
+    @Column(columnDefinition = "TEXT") // 상품 설명은 길이가 길 수 있어 TEXT로 설정
+    private String description;
+
     @Column(name = "numbers_likes")
     private Integer numbersLikes;
 
@@ -50,10 +53,12 @@ public class Product {
 
     // 생성자
     public Product(String name, BigDecimal price,
-                   String gender, String mainImageUrls, String detailImageUrls) {
+                   String gender, String description,
+                   String mainImageUrls, String detailImageUrls) {
         this.name = name;
         this.price = price;
         this.gender = gender;
+        this.description = description;
         this.mainImageUrls = mainImageUrls;
         this.detailImageUrls = detailImageUrls;
         this.numbersLikes = 0;
