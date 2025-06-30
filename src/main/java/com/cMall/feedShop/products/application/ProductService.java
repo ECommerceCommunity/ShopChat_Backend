@@ -4,13 +4,15 @@ import com.cMall.feedShop.products.domain.Color;
 import com.cMall.feedShop.products.domain.ProductColor;
 import com.cMall.feedShop.products.domain.ProductSize;
 import com.cMall.feedShop.products.domain.repository.ColorRepository;
+import com.cMall.feedShop.products.domain.Product;
+import com.cMall.feedShop.products.domain.repository.ProductRepository;
+import com.cMall.feedShop.products.application.dto.request.ProductCreateRequest;
+import com.cMall.feedShop.products.application.dto.response.ProductResponse;
+import com.cMall.feedShop.products.application.dto.response.OtherColorProductDto;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.cMall.feedShop.products.application.dto.request.ProductCreateRequest;
-import com.cMall.feedShop.products.application.dto.response.ProductResponse;
-import com.cMall.feedShop.products.domain.Product;
-import com.cMall.feedShop.products.domain.repository.ProductRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,8 +31,7 @@ public class ProductService {
                 req.getPrice(),
                 req.getGender(),
                 req.getDescription(),
-                req.getMainImageUrls(),
-                req.getDetailImageUrls()
+                req.getModelCode()
         );
 
         // 색상 추가
@@ -38,7 +39,7 @@ public class ProductService {
             Color color = colorRepository.findById(colorId)
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 색상입니다."));
             ProductColor productColor = new ProductColor(product, color);
-            product.getProductColors().add(productColor);
+            product.addProductColor(productColor);
         }
 
         // 옵션(사이즈/재고) 추가
@@ -49,7 +50,7 @@ public class ProductService {
                     product,
                     optionDto.getType()
             );
-            product.getProductSizes().add(option);
+            product.addProductSize(option);
         }
 
         productRepository.save(product); // 연관된 option과 color도 함께 저장됨
@@ -59,8 +60,27 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public List<ProductResponse> findAll() {
-        return productRepository.findAll().stream()
+        List<Product> products = productRepository.findAllWithDetails();
+        System.out.println("조회된 상품 수: " + products.size());
+
+        return products.stream()
                 .map(ProductResponse::from)
                 .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public Product findById(Long id) {
+        Product product = productRepository.findByIdWithDetails(id);
+        if (product == null) {
+            throw new IllegalArgumentException("해당 ID의 상품이 존재하지 않습니다: " + id);
+        }
+        return product;
+    }
+
+    @Transactional(readOnly = true)
+    public List<OtherColorProductDto> findOtherColorProductsByModelCode(String modelCode, Long currentProductId) {
+        // Repository가 이미 OtherColorProductDto를 반환하므로 변환 불필요
+        return productRepository.findOtherColorProductsByModelCode(modelCode, currentProductId);
+    }
+
 }
