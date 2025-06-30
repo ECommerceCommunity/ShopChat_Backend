@@ -11,14 +11,15 @@ public class ProductCreateRequest {
     private BigDecimal price;
     private String gender;
     private String description;
-    private String mainImageUrls;
-    private String detailImageUrls;
+    private String modelCode;
+    private List<String> mainImageUrls;
+    private List<String> detailImageUrls;
     private List<Long> colorIds;
     private List<OptionDto> options;
 
     @Getter
     public static class OptionDto {
-        private Integer size;
+        private String size;
         private Integer stock;
         private String type;
     }
