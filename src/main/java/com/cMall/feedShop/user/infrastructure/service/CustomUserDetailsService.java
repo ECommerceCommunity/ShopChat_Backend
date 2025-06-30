@@ -1,4 +1,4 @@
-package com.cMall.feedShop.user.domain.service; // 또는 적절한 패키지 경로
+package com.cMall.feedShop.user.infrastructure.service; // 또는 적절한 패키지 경로
 
 import com.cMall.feedShop.user.domain.model.User;
 import com.cMall.feedShop.user.domain.repository.UserRepository;
