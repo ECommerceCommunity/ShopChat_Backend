@@ -1,5 +1,6 @@
-package com.cMall.feedShop.user.domain.service;
+package com.cMall.feedShop.user.infrastructure.service;
 
+import com.cMall.feedShop.user.domain.service.PasswordEncryptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

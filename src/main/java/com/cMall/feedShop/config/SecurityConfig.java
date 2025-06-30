@@ -1,6 +1,6 @@
 package com.cMall.feedShop.config;
 
-import com.cMall.feedShop.user.domain.service.CustomUserDetailsService;
+import com.cMall.feedShop.user.infrastructure.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
