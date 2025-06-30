@@ -14,7 +14,7 @@ public class ProductSize {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Integer size;
+    private String size; // ✅ Integer ➔ String
 
     private Integer stock;
 
@@ -25,10 +25,14 @@ public class ProductSize {
     private Product product;
 
     // 생성자
-    public ProductSize(Integer size, Integer stock, Product product, String type) {
+    public ProductSize(String size, Integer stock, Product product, String type) {
         this.size = size;
         this.stock = stock;
         this.product = product;
         this.type = type;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
     }
 }

@@ -5,26 +5,24 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "product_colors")
+@Table(name = "product_detail_image_urls")
 @Getter
 @NoArgsConstructor
-public class ProductColor {
+public class ProductDetailImageUrl {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String imageUrl;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "color_id")
-    private Color color;
-
-    public ProductColor(Product product, Color color) {
+    public ProductDetailImageUrl(String imageUrl, Product product) {
+        this.imageUrl = imageUrl;
         this.product = product;
-        this.color = color;
     }
 
     // ✅ 추가: setProduct 메서드
