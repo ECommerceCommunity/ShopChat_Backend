@@ -25,15 +25,10 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ProductResponse getProductById(@PathVariable Long id) {
-        Product product = productService.findById(id); // Product 반환
+        Product product = productService.findById(id);
 
-        // product에서 modelCode 가져오기
-        String modelCode = product.getModelCode();
-
-        // modelCode와 id 모두 전달
-        List<OtherColorProductDto> otherColors = productService.findOtherColorProductsByModelCode(modelCode, id);
+        List<OtherColorProductDto> otherColors = productService.findOtherColorProductsByProductId(id);
 
         return ProductResponse.from(product, otherColors);
     }
-
 }

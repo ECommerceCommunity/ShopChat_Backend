@@ -5,7 +5,9 @@ import com.cMall.feedShop.products.domain.ProductColor;
 import com.cMall.feedShop.products.domain.ProductSize;
 import com.cMall.feedShop.products.domain.repository.ColorRepository;
 import com.cMall.feedShop.products.domain.Product;
+import com.cMall.feedShop.products.domain.ProductOtherColor;
 import com.cMall.feedShop.products.domain.repository.ProductRepository;
+import com.cMall.feedShop.products.domain.repository.ProductOtherColorRepository;
 import com.cMall.feedShop.products.application.dto.request.ProductCreateRequest;
 import com.cMall.feedShop.products.application.dto.response.ProductResponse;
 import com.cMall.feedShop.products.application.dto.response.OtherColorProductDto;
@@ -23,6 +25,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ColorRepository colorRepository;
+    private final ProductOtherColorRepository productOtherColorRepository;
 
     @Transactional
     public Long create(ProductCreateRequest req) {
@@ -79,8 +82,11 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public List<OtherColorProductDto> findOtherColorProductsByModelCode(String modelCode, Long currentProductId) {
-        // Repository가 이미 OtherColorProductDto를 반환하므로 변환 불필요
         return productRepository.findOtherColorProductsByModelCode(modelCode, currentProductId);
     }
 
+    @Transactional(readOnly = true)
+    public List<OtherColorProductDto> findOtherColorProductsByProductId(Long productId) {
+        return productOtherColorRepository.findOtherColorsByProductId(productId);
+    }
 }
