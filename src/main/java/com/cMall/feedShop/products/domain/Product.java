@@ -15,7 +15,6 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class Product {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "product_id")

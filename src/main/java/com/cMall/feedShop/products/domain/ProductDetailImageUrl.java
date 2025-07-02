@@ -25,7 +25,6 @@ public class ProductDetailImageUrl {
         this.product = product;
     }
 
-    // ✅ 추가: setProduct 메서드
     public void setProduct(Product product) {
         this.product = product;
     }

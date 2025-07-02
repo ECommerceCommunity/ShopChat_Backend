@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import com.cMall.feedShop.products.application.dto.response.OtherColorProductDto;
 
 @Getter
@@ -20,6 +21,7 @@ public class ProductResponse {
     private String description;
     private Integer numbersLikes;
     private List<ColorDto> colors;
+    private List<Long> colorIds;
     private List<SizeDto> sizes;
     private List<DiscountDto> discounts;
     private List<String> mainImageUrls;
@@ -41,6 +43,10 @@ public class ProductResponse {
                         pc.getColor().getEnglishName(),
                         pc.getColor().getImageUrl()
                 ))
+                .collect(Collectors.toList());
+
+        List<Long> colorIds = colors.stream()
+                .map(ColorDto::getId)
                 .collect(Collectors.toList());
 
         List<SizeDto> sizes = Optional.ofNullable(product.getProductSizes())
@@ -98,6 +104,7 @@ public class ProductResponse {
                 product.getDescription(),
                 product.getNumbersLikes(),
                 colors,
+                colorIds,
                 sizes,
                 discounts,
                 mainImageUrls,

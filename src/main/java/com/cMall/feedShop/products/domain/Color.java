@@ -20,7 +20,7 @@ public class Color {
     private String name;
 
     @Column(name = "english_name")
-    private String englishName;  // ✅ 필드명 수정
+    private String englishName;
 
     private String imageUrl;
 

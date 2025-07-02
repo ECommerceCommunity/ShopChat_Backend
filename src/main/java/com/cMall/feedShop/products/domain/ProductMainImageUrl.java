@@ -25,7 +25,10 @@ public class ProductMainImageUrl {
         this.product = product;
     }
 
-    // ✅ 추가: setProduct 메서드
+    public ProductMainImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     public void setProduct(Product product) {
         this.product = product;
     }
