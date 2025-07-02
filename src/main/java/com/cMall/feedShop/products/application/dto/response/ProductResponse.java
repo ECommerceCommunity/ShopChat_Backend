@@ -83,7 +83,10 @@ public class ProductResponse {
             store = new StoreDto(
                     product.getStore().getId(),
                     product.getStore().getName(),
-                    product.getStore().getDescription()
+                    product.getStore().getDescription(),
+                    product.getStore().getLogo(),
+                    product.getStore().getNumbersLikes(),
+                    product.getStore().getUser() != null ? product.getStore().getUser().getId() : null
             );
         }
 
@@ -138,5 +141,8 @@ public class ProductResponse {
         private Long id;
         private String name;
         private String description;
+        private String logo;
+        private Integer numbersLikes;
+        private Long userId;
     }
 }
