@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "shoes")
+@Table(name = "product_options")
 @Getter
 @NoArgsConstructor
 public class ProductSize {
@@ -14,7 +14,7 @@ public class ProductSize {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String size; // ✅ Integer ➔ String
+    private String size;
 
     private Integer stock;
 

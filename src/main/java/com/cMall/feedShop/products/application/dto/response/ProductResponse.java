@@ -59,8 +59,8 @@ public class ProductResponse {
                 .stream()
                 .map(pd -> new DiscountDto(
                         pd.getId(),
-                        pd.getDiscountType(),
-                        pd.getDiscountValue(),
+                        pd.getDiscountPrice() != null ? pd.getDiscountPrice().getDiscountType() : null,
+                        pd.getDiscountPrice() != null ? pd.getDiscountPrice().getDiscountValue() : null,
                         pd.getStartDate() != null ? pd.getStartDate().toString() : null,
                         pd.getEndDate() != null ? pd.getEndDate().toString() : null
                 ))

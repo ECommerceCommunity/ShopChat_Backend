@@ -1,32 +1,31 @@
 package com.cMall.feedShop.products.domain;
 
-import com.cMall.feedShop.products.domain.DiscountPrice;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "product_discounts")
+@Table(name = "discount_prices")
 @Getter
 @NoArgsConstructor
-public class ProductDiscount {
+public class DiscountPrice {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "discount_id")
     private Long id;
 
     @Setter
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @Column(name = "discount_type")
+    private String discountType;
 
     @Setter
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "discount_id")
-    private DiscountPrice discountPrice;
+    @Column(name = "discount_value")
+    private BigDecimal discountValue;
 
     @Setter
     @Column(name = "start_date")
