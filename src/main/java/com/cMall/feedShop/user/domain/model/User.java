@@ -2,6 +2,7 @@ package com.cMall.feedShop.user.domain.model;
 
 import com.cMall.feedShop.user.domain.enums.UserRole;
 import com.cMall.feedShop.user.domain.enums.UserStatus;
+import com.cMall.feedShop.stores.domain.Store;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority; // <-
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -63,6 +65,9 @@ public class User implements UserDetails {
 
     @Column(nullable = false, length = 20)
     private String phone;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Store> stores = new ArrayList<>();
 
     //(회원가입 시 사용)
     public User(String loginId, String password, String email, String phone, UserRole role) {
