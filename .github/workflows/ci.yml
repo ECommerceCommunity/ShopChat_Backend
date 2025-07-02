@@ -11,15 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-<<<<<<< HEAD
-<<<<<<< HEAD
-    - name: Checkout Repository
-=======
     - name: Checkout Repository 
->>>>>>> origin/develop
-=======
-    - name: Checkout Repository 
->>>>>>> origin/MYCE-11-minchan-feat/cart&order
       uses: actions/checkout@v4
 
     - name: Set up JDK 17
@@ -37,28 +29,13 @@ jobs:
 
     - name: Run Tests
       run: ./gradlew test --continue
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
       env:
         SPRING_PROFILES_ACTIVE: test
 
->>>>>>> origin/develop
-=======
-      env:
-        SPRING_PROFILES_ACTIVE: test
-
->>>>>>> origin/MYCE-11-minchan-feat/cart&order
 
     - name: Generate Test Coverage Report
       run: ./gradlew jacocoTestReport
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    - name: Build Project (without tests)
-=======
-=======
->>>>>>> origin/MYCE-11-minchan-feat/cart&order
     - name: Build Project (without tests) # 테스트를 제외하고 프로젝트를 빌드합니다.
       # 이 단계에서는 application.properties가 기본으로 사용되며,
       # 만약 해당 파일에 환경 변수(DB_HOST, SERVER_PORT 등)가 정의되어 있고,
@@ -70,10 +47,6 @@ jobs:
       #   DB_HOST: ${{ secrets.DB_HOST_PROD }} # 예시: 실제 운영 DB 호스트
       #   DB_PORT: ${{ secrets.DB_PORT_PROD }}
       #   SPRING_PROFILES_ACTIVE: production # 만약 빌드 시에 'production' 프로파일을 사용하고 싶다면
-<<<<<<< HEAD
->>>>>>> origin/develop
-=======
->>>>>>> origin/MYCE-11-minchan-feat/cart&order
       run: ./gradlew build -x test
 
     - name: Upload Test Results
@@ -83,15 +56,7 @@ jobs:
         name: test-results
         path: build/test-results/test/*.xml
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    - name: Upload Test Coverage
-=======
     - name: Upload Test Coverage # 테스트 커버리지 보고서 아티팩트를 업로드합니다.
->>>>>>> origin/develop
-=======
-    - name: Upload Test Coverage # 테스트 커버리지 보고서 아티팩트를 업로드합니다.
->>>>>>> origin/MYCE-11-minchan-feat/cart&order
       if: always()
       uses: actions/upload-artifact@v4
       with:
@@ -99,32 +64,12 @@ jobs:
         path: build/reports/jacoco/test/jacocoTestReport.xml
 
     - name: Analyze with SonarQube
-      run: ./gradlew sonarqube \
-<<<<<<< HEAD
-<<<<<<< HEAD
-        -Dsonar.projectKey=ecommercecommunity:FeedShop_Backend \ 
-        -Dsonar.projectName="FeedShop_Backend"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-
-    
-=======
-        -Dsonar.projectKey=ecommercecommunity:FeedShop_Backend \
+      run: | 
+        ./gradlew sonarqube \
+        -Dsonar.projectKey=ECommerceCommunity_FeedShop_Backend \
         -Dsonar.projectName="FeedShop_Backend" \
-        -Dsonar.token=${{ secrets.SONAR_TOKEN }} # SonarCloud 토큰을 GitHub Secrets에서 가져와 전달
+        -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+        -Dsonar.organization=ecommercecommunity #
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         JWT_SECRET: ${{ secrets.JWT_SECRET }}
->>>>>>> origin/develop
-=======
-        -Dsonar.projectKey=ecommercecommunity:FeedShop_Backend \
-        -Dsonar.projectName="FeedShop_Backend" \
-        -Dsonar.token=${{ secrets.SONAR_TOKEN }} # SonarCloud 토큰을 GitHub Secrets에서 가져와 전달
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        JWT_SECRET: ${{ secrets.JWT_SECRET }}
->>>>>>> origin/MYCE-11-minchan-feat/cart&order
