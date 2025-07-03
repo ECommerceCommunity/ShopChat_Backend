@@ -11,52 +11,65 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: 'gradle'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-    - name: Clean build directory
-      run: ./gradlew clean
+      - name: Clean build directory
+        run: ./gradlew clean
 
-    - name: Run Tests
-      run: ./gradlew test --continue
-
-    - name: Generate Test Coverage Report
-      run: ./gradlew jacocoTestReport
-
-    - name: Build Project (without tests)
-      run: ./gradlew build -x test
-
-    - name: Upload Test Results
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-results
-        path: build/test-results/test/*.xml
-
-    - name: Upload Test Coverage
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-coverage
-        path: build/reports/jacoco/test/jacocoTestReport.xml
-
-    - name: Analyze with SonarQube
-      run: ./gradlew sonarqube \
-        -Dsonar.projectKey=ecommercecommunity:FeedShop_Backend \ 
-        -Dsonar.projectName="FeedShop_Backend"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Run Tests
+        run: ./gradlew test --continue
+        env:
+          SPRING_PROFILES_ACTIVE: test
 
 
-    
+      - name: Generate Test Coverage Report
+        run: ./gradlew jacocoTestReport
+
+      - name: Build Project (without tests) # 테스트를 제외하고 프로젝트를 빌드합니다.
+        # 이 단계에서는 application.properties가 기본으로 사용되며,
+        # 만약 해당 파일에 환경 변수(DB_HOST, SERVER_PORT 등)가 정의되어 있고,
+        # 빌드 시에 해당 변수들이 필요하다면 아래 'env' 섹션을 추가해야 합니다.
+        # 일반적으로 JAR/WAR 파일 생성 시에는 플레이스홀더를 포함한 채로 빌드하고,
+        # 실제 실행 환경에서 환경 변수를 주입하는 것이 일반적입니다.
+        # 하지만 만약 빌드 자체가 특정 환경 변수를 필요로 한다면:
+        # env:
+        #   DB_HOST: ${{ secrets.DB_HOST_PROD }} # 예시: 실제 운영 DB 호스트
+        #   DB_PORT: ${{ secrets.DB_PORT_PROD }}
+        #   SPRING_PROFILES_ACTIVE: production # 만약 빌드 시에 'production' 프로파일을 사용하고 싶다면
+        run: ./gradlew build -x test
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: build/test-results/test/*.xml
+
+      - name: Upload Test Coverage # 테스트 커버리지 보고서 아티팩트를 업로드합니다.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage
+          path: build/reports/jacoco/test/jacocoTestReport.xml
+
+      - name: Analyze with SonarQube
+        run: |
+          ./gradlew sonarqube \
+          -Dsonar.projectKey=ECommerceCommunity_FeedShop_Backend \
+          -Dsonar.projectName="FeedShop_Backend" \
+          -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+          -Dsonar.organization=ecommercecommunity #
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
