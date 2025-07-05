@@ -1,5 +1,15 @@
 package com.cMall.feedShop.product.application.dto.request;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Getter
+@NoArgsConstructor
 public class ProductRequest {
-    // TODO: 상품 요청 DTO
+    private String name;
+    private BigDecimal price;
+    private Long storeId;
+    private Long categoryId;
 }

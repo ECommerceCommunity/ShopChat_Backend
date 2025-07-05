@@ -1,5 +1,11 @@
 package com.cMall.feedShop.product.domain.model;
 
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
 public class ProductImage {
-    // TODO: 상품 이미지 Entity
+    private Long productImageId;
+    private String url;
+    private String type;
+    private Long productId;
 }

@@ -1,5 +1,9 @@
 package com.cMall.feedShop.cart.domain.model;
 
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
 public class Cart {
-    // TODO: 장바구니 Entity
+    private Long cartId;
+    private Long userId;
 }

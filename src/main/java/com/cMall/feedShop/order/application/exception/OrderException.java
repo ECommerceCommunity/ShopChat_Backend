@@ -1,5 +1,10 @@
 package com.cMall.feedShop.order.application.exception;
 
-public class OrderException {
-    // TODO: 주문 예외처리
+import com.cMall.feedShop.common.exception.BusinessException;
+import com.cMall.feedShop.common.exception.ErrorCode;
+
+public class OrderException extends BusinessException {
+    public OrderException(ErrorCode errorCode) {
+        super(errorCode);
+    }
 }

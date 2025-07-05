@@ -1,5 +1,17 @@
 package com.cMall.feedShop.store.application.dto.response;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Getter
+@NoArgsConstructor
 public class StoreResponse {
-    // TODO: 가게 응답 DTO
+    private Long storeId;
+    private String storeName;
+    private String description;
+    private String logo;
+    private Long managerId;
+    private LocalDateTime createdAt;
 }

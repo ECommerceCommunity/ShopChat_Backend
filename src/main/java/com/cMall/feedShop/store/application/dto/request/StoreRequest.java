@@ -1,5 +1,13 @@
 package com.cMall.feedShop.store.application.dto.request;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
 public class StoreRequest {
-    // TODO: 가게 요청 DTO
+    private String storeName;
+    private String description;
+    private String logo;
+    private Long managerId;
 }

@@ -1,5 +1,14 @@
 package com.cMall.feedShop.cart.application.dto.response;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Getter
+@NoArgsConstructor
 public class RecentViewResponse {
-    // TODO: 최근 본 상품 응답 DTO
+    private Long viewId;
+    private Long productId;
+    private LocalDateTime viewedAt;
 }

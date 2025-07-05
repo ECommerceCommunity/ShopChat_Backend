@@ -1,5 +1,16 @@
 package com.cMall.feedShop.cart.domain.model;
 
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@NoArgsConstructor
 public class CartItem {
-    // TODO: 장바구니 아이템 Entity
+    private Long cartItemId;
+    private Long cartId;
+    private Long optionId;
+    private Long imageId;
+    private Integer quantity;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

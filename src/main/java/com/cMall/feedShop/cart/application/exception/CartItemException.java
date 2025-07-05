@@ -1,5 +1,10 @@
 package com.cMall.feedShop.cart.application.exception;
 
-public class CartItemException {
-    // TODO: 장바구니 아이템 예외처리
+import com.cMall.feedShop.common.exception.BusinessException;
+import com.cMall.feedShop.common.exception.ErrorCode;
+
+public class CartItemException extends BusinessException {
+    public CartItemException(ErrorCode errorCode) {
+        super(errorCode);
+    }
 }
