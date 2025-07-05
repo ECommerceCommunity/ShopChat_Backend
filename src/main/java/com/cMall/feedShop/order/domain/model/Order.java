@@ -1,12 +1,18 @@
 package com.cMall.feedShop.order.domain.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "orders")
 @NoArgsConstructor
 public class Order {
+    @Id
     private Long orderId;
     private Long userId;
     private String status;
