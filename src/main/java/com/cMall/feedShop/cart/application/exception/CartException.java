@@ -1,4 +1,10 @@
 package com.cMall.feedShop.cart.application.exception;
 
-public class CartException {
+import com.cMall.feedShop.common.exception.BusinessException;
+import com.cMall.feedShop.common.exception.ErrorCode;
+
+public class CartException extends BusinessException {
+    public CartException(ErrorCode errorCode) {
+        super(errorCode);
+    }
 }
