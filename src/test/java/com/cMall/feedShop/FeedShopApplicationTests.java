@@ -9,6 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 //@ActiveProfiles("test")
 @SpringBootTest
 class FeedShopApplicationTests {
+
     @MockBean
     private JavaMailSender javaMailSender;
 
