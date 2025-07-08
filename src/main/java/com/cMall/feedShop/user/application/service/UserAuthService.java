@@ -14,9 +14,11 @@ import org.springframework.security.authentication.AuthenticationManager; // Aut
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken; // UsernamePasswordAuthenticationToken import 추가
 import org.springframework.security.core.Authentication; // Authentication import 추가
 import org.springframework.security.core.userdetails.UsernameNotFoundException; // UsernameNotFoundException import 추가
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserAuthService {
 
     private final UserRepository userRepository;

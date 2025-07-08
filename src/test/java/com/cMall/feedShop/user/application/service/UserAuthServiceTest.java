@@ -32,30 +32,29 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
-@ExtendWith(MockitoExtension.class) // JUnit 5에서 Mockito를 사용하기 위한 설정
+@ExtendWith(MockitoExtension.class)
 class UserAuthServiceTest {
 
-    @Mock // Mock 객체 생성
+    @Mock
     private UserRepository userRepository;
 
-    @Mock // Mock 객체 생성
+    @Mock
     private PasswordEncoder passwordEncoder; // UserAuthService의 생성자에 있다면 Mock으로 필요
 
-    @Mock // Mock 객체 생성
+    @Mock
     private JwtTokenProvider jwtTokenProvider;
 
-    @Mock // Mock 객체 생성
+    @Mock
     private AuthenticationManager authenticationManager;
 
     @InjectMocks // Mock 객체들을 주입받을 테스트 대상 서비스
     private UserAuthService userAuthService;
 
-    // 테스트에 사용될 공통 데이터
     private UserLoginRequest loginRequest;
     private User testUser;
     private String dummyToken;
 
-    @BeforeEach // 각 테스트 메서드 실행 전에 초기화
+    @BeforeEach
     void setUp() {
         loginRequest = new UserLoginRequest();
         loginRequest.setEmail("test@example.com");
@@ -65,8 +64,8 @@ class UserAuthServiceTest {
                 "testLoginId",
                 "encodedPassword123", // DB에 저장된 암호화된 비밀번호
                 "test@example.com",
-                "010-1234-5678",
-                UserRole.ROLE_USER
+//                "010-1234-5678",
+                UserRole.USER
         );
         // 테스트 객체 생성 시에는 생략하거나 mock 데이터를 직접 설정
         testUser.setId(1L);

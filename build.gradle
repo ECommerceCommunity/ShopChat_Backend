@@ -45,6 +45,8 @@ dependencies {
 	testImplementation 'com.h2database:h2'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.github.cdimascio:java-dotenv:5.2.2'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 	// JWT 라이브러리 추가
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
@@ -56,13 +58,6 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 	finalizedBy jacocoTestReport
-
-	testLogging {
-		events "passed", "skipped", "failed", "standardOut", "standardError"
-		showExceptions true
-		exceptionFormat "full" // 스택 트레이스를 전체 출력
-		showStandardStreams true // System.out, System.err로 출력되는 내용도 포함
-	}
 }
 
 jacoco {
@@ -82,12 +77,11 @@ jacocoTestReport {
 }
 
 // SonarCloud 설정 추가
-sonar {
+sonarqube {
 	properties {
 		property "sonar.projectKey", "ECommerceCommunity_FeedShop_Backend"
 		property "sonar.organization", "ecommercecommunity"
 		property "sonar.host.url", "https://sonarcloud.io"
-		property "sonar.token", System.getenv("SONAR_TOKEN")
 
 		// 코드 커버리지를 Jacoco 리포트와 연동
 		property "sonar.java.coveragePlugin", "jacoco"
