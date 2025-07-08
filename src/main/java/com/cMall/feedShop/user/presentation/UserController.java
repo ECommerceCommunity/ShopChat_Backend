@@ -19,10 +19,4 @@ public class UserController {
         UserProfileResponse response = userProfileService.getUserProfile(userId);
         return response;
     }
-
-    // JWT 로그인 메서드도 있다면 여기에 추가
-    // @PostMapping("/login")
-    // public AuthTokenResponse login(@RequestBody UserLoginRequest request) {
-    //     return userService.login(request);
-    // }
 }

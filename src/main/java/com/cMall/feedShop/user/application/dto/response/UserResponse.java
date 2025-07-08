@@ -17,6 +17,7 @@ public class UserResponse {
     private UserRole role; 
     private String status; 
     private LocalDateTime createdAt;
+    private String message;
 
     // User 엔티티를 UserResponse DTO로 변환하는 정적 팩토리 메서드
     public static UserResponse from(User user) {
@@ -24,10 +25,21 @@ public class UserResponse {
                 .userId(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .phone(user.getPhone())
                 .role(user.getRole())
                 .status(user.getStatus().name()) // Enum을 String으로 변환하여 반환
                 .createdAt(user.getCreatedAt())
+                .build();
+    }
+
+    public static UserResponse from(User user, String message) {
+        return UserResponse.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .status(user.getStatus().name()) // Enum을 String으로 변환하여 반환
+                .createdAt(user.getCreatedAt())
+                .message(message)
                 .build();
     }
 }
