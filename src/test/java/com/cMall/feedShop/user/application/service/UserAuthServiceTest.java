@@ -22,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder; // PasswordEncoder mock은 AuthenticationManager 내부에서 사용되므로 직접 필요없지만, 생성자에 있다면 Mock으로 주입
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -39,7 +40,7 @@ class UserAuthServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private PasswordEncoder passwordEncoder; // UserAuthService의 생성자에 있다면 Mock으로 필요
+    private PasswordEncoder passwordEncoder;
 
     @Mock
     private JwtTokenProvider jwtTokenProvider;
@@ -69,8 +70,8 @@ class UserAuthServiceTest {
         );
         // 테스트 객체 생성 시에는 생략하거나 mock 데이터를 직접 설정
         testUser.setId(1L);
-        testUser.setCreatedAt(LocalDateTime.now());
-        testUser.setUpdatedAt(LocalDateTime.now());
+        ReflectionTestUtils.setField(testUser, "createdAt", LocalDateTime.now());
+        ReflectionTestUtils.setField(testUser, "updatedAt", LocalDateTime.now());
         testUser.setPasswordChangedAt(LocalDateTime.now());
 
         dummyToken = "dummy_jwt_token";
