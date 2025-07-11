@@ -1,5 +1,7 @@
 package com.cMall.feedShop.user.application.service;
 
+import com.cMall.feedShop.common.exception.BusinessException;
+import com.cMall.feedShop.common.exception.ErrorCode;
 import com.cMall.feedShop.common.service.EmailService;
 import com.cMall.feedShop.user.application.dto.request.UserSignUpRequest;
 import com.cMall.feedShop.user.application.dto.response.UserResponse;
@@ -17,6 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
+
+import static com.cMall.feedShop.common.exception.ErrorCode.INVALID_PASSWORD;
+import static com.cMall.feedShop.common.exception.ErrorCode.USER_NOT_FOUND;
 
 @Service
 @Transactional
@@ -177,5 +182,70 @@ public class UserService {
         user.setVerificationTokenExpiry(null);
 
         userRepository.save(user);
+    }
+
+    // 1. 사용자 ID로 회원 탈퇴 (관리자용 또는 내부 로직) - 기존 코드 유지
+    @Transactional
+    public void withdrawUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND,"사용자를 찾을 수 없습니다. ID: " + userId)); // UserNotFoundException 사용
+
+        // 이미 DELETED 상태라면 다시 처리할 필요 없음
+        if (user.getStatus() == UserStatus.DELETED) {
+            // 이미 탈퇴 처리된 계정에 대한 로직을 어떻게 할지는 비즈니스 요구사항에 따라 결정
+            // 예를 들어, 예외를 던지거나, 단순히 로그를 남기고 종료할 수 있습니다.
+            return; // 이미 탈퇴된 경우 추가 처리 없이 종료
+        }
+
+        // 옵션 A: 사용자 상태를 DELETED로 변경 (소프트 삭제) - 일반적으로 선호
+        user.setStatus(UserStatus.DELETED);
+        userRepository.save(user);
+
+        // TODO: 사용자와 관련된 다른 데이터 (주문, 게시글, 댓글 등) 처리 로직 추가
+        // - 해당 사용자의 모든 게시글/댓글을 삭제 (Hard Delete) 또는 작성자를 '탈퇴한 사용자' 등으로 변경 (Soft Delete)
+        // - 해당 사용자의 주문 내역은 유지하되, 사용자 정보는 비식별화 (개인정보보호)
+        // - 예시: orderService.anonymizeUserOrders(userId);
+        // - 예시: boardService.updateAuthorToWithdrawn(userId);
+    }
+
+    // 2. 관리자용: 이메일로 사용자 탈퇴 (비밀번호 확인 불필요)
+    @Transactional
+    public void adminWithdrawUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND,"사용자를 찾을 수 없습니다. 이메일: " + email));
+
+        // 이미 DELETED 상태라면 다시 처리할 필요 없음
+        if (user.getStatus() == UserStatus.DELETED) {
+            return; // 이미 탈퇴된 경우 추가 처리 없이 종료
+        }
+
+        // 소프트 삭제: 상태를 DELETED로 변경
+        user.setStatus(UserStatus.DELETED);
+        userRepository.save(user);
+
+        // TODO: 위 withdrawUser 메서드와 동일하게 관련 데이터 처리 로직 추가
+    }
+
+    // 3. 사용자용: 이메일과 비밀번호 확인으로 회원 탈퇴 (보안 강화) - 기존 코드 유지
+    @Transactional
+    public void withdrawUserWithPassword(String email, String rawPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND,"사용자를 찾을 수 없습니다. 이메일: " + email));
+
+        // 비밀번호 일치 여부 확인
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD,"비밀번호가 일치하지 않습니다.");
+        }
+
+        // 이미 DELETED 상태라면 다시 처리할 필요 없음
+        if (user.getStatus() == UserStatus.DELETED) {
+            throw new BusinessException(ErrorCode.USER_ALREADY_DELETED,"이미 탈퇴 처리된 계정입니다."); // 사용자에게 알림 필요
+        }
+
+        // 소프트 삭제: 상태를 DELETED로 변경
+        user.setStatus(UserStatus.DELETED);
+        userRepository.save(user);
+
+        // TODO: 위 withdrawUser 메서드와 동일하게 관련 데이터 처리 로직 추가
     }
 }
