@@ -12,11 +12,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint; // <-- 추가
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.http.HttpStatus; // <-- 추가
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -29,23 +29,25 @@ public class SecurityConfig {
         httpSecurity
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // 예외 처리 (인증되지 않은 사용자가 보호된 리소스에 접근 시 처리)
                 .exceptionHandling(exceptionHandling -> exceptionHandling
-                        // 인증되지 않은 사용자가 접근 시 HTTP 401 Unauthorized 응답을 반환하도록 설정
-                        // React는 이 401 응답을 받아서 자체적으로 로그인 페이지로 리다이렉트하거나 메시지를 표시합니다.
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
-
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/auth/signup", "/public/**",
-                                "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
-                                "/api/products", "/api/products/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/login", 
+                                "/api/auth/signup", 
+                                "/public/**",
+                                "/swagger-ui/**", 
+                                "/v3/api-docs/**", 
+                                "/swagger-resources/**",
+                                "/api/products", 
+                                "/api/products/**",
+                                "/api/events", 
+                                "/api/events/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
-                // 폼 로그인 및 HTTP Basic 인증은 사용하지 않음
                 .formLogin(formLogin -> formLogin.disable())
                 .httpBasic(httpBasic -> httpBasic.disable());
 
@@ -64,4 +66,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-}
+} 
