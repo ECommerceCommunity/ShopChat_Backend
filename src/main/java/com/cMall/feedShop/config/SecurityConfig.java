@@ -46,6 +46,7 @@ public class SecurityConfig {
                                 "/api/events", 
                                 "/api/events/**"
                         ).permitAll()
+                        .requestMatchers("/api/seller/**").hasRole("SELLER")
                         .anyRequest().authenticated()
                 )
                 .formLogin(formLogin -> formLogin.disable())

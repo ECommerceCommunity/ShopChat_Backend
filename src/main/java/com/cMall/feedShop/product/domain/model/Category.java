@@ -22,7 +22,14 @@ public class Category {
     @Column(name="type", nullable = false)
     private CategoryType type;
 
+    @Column(name = "name", nullable = false)
+    private String name;
+
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<Product> products = new ArrayList<>();
 
+    public Category(CategoryType type, String name) {
+        this.type = type;
+        this.name = name;
+    }
 }

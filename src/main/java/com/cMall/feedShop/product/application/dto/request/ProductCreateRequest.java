@@ -1,11 +1,13 @@
 package com.cMall.feedShop.product.application.dto.request;
 
 import com.cMall.feedShop.product.domain.enums.DiscountType;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -15,7 +17,7 @@ public class ProductCreateRequest {
     private String name;
 
     @NotNull(message = "가격은 필수입니다.")
-    @DecimalMin(value = "0.01", message = "가격은 0보다 커야 합니다.")
+    @DecimalMin(value = "1000", message = "가격은 0보다 커야 합니다.")
     private BigDecimal price;
 
     @NotNull(message = "카테고리는 필수입니다.")
@@ -27,11 +29,11 @@ public class ProductCreateRequest {
 
     private String description;
 
-    @AssertTrue(message = "할인 타입이 설정된 경우 할인 값이 필요합니다.")
-    public boolean isDiscountValid() {
-        if (discountType == DiscountType.NONE) {
-            return discountValue == null || discountValue.equals(BigDecimal.ZERO);
-        }
-        return discountValue != null && discountValue.compareTo(BigDecimal.ZERO) > 0;
-    }
+    @Valid
+    @NotEmpty(message = "상품 이미지는 최소 1개 이상 등록해야 합니다.")
+    private List<ProductImageRequest> images;
+
+    @Valid
+    @NotEmpty(message = "상품 옵션은 최소 1개 이상 등록해야 합니다.")
+    private List<ProductOptionRequest> options;
 }
