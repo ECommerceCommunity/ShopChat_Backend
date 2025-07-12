@@ -1,0 +1,24 @@
+# Spring App
+SPRING_APPLICATION_NAME=shopGram
+
+# DB Connection
+DB_HOST=34.64.121.24
+DB_PORT=3306
+DB_NAME=shopgram
+DB_USERNAME=cmall
+DB_PASSWORD=pass123!!
+
+# Docker MySQL
+MYSQL_ROOT_PASSWORD=root123!!
+MYSQL_DATABASE=shopgram
+MYSQL_USER=cmall
+MYSQL_PASSWORD=pass123!!
+
+SERVER_PORT=8443
+SSL_ENABLED=true
+SSL_KEY_STORE=classpath:keystore.p12
+SSL_KEY_STORE_PASSWORD=ssl123!!
+SSL_KEY_STORE_TYPE=PKCS12
+SSL_KEY_ALIAS=springboot
+
+jwt.secret=sesac_springboot_cmall_feedShop_project_jwt_secret_key
