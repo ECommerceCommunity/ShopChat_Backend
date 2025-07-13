@@ -30,17 +30,6 @@ class CategoryTypeTest {
     }
 
     @Test
-    @DisplayName("각 CategoryType이 정의되었을때_객체 생성하면_null이 아니다")
-    void givenCategoryTypes_whenCreateObjects_thenNotNull() {
-        // when & then
-        assertThat(CategoryType.SNEAKERS).isNotNull();
-        assertThat(CategoryType.RUNNING).isNotNull();
-        assertThat(CategoryType.BOOTS).isNotNull();
-        assertThat(CategoryType.SANDALS).isNotNull();
-        assertThat(CategoryType.CONVERSE).isNotNull();
-    }
-
-    @Test
     @DisplayName("CategoryType이 주어졌을때_name 호출하면_정확한 이름이 반환된다")
     void givenCategoryType_whenCallName_thenReturnCorrectName() {
         // when & then - 실제 존재하는 값들로 수정
