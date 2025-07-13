@@ -18,9 +18,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -351,7 +355,7 @@ class UserServiceTest {
         given(passwordEncoder.matches(rawPassword, encodedPassword)).willReturn(true);
 
         // When
-        userService.withdrawUserWithPassword(email, rawPassword);
+        userService.withdrawCurrentUserWithPassword(email, rawPassword);
 
         // Then
         assertThat(user.getStatus()).isEqualTo(UserStatus.DELETED);
@@ -360,7 +364,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("회원 탈퇴 실패 - 이메일과 비밀번호로 탈퇴 시 사용자 없음")
-    void withdrawUserWithPassword_Fail_UserNotFound() {
+    void withdrawCurrentUserWithPassword_Fail_UserNotFound() {
         // Given
         String email = "nonexistent@example.com";
         String rawPassword = "password123!";
@@ -368,7 +372,7 @@ class UserServiceTest {
 
         // When & Then
         BusinessException thrown = assertThrows(BusinessException.class, () ->
-                userService.withdrawUserWithPassword(email, rawPassword)
+                userService.withdrawCurrentUserWithPassword(email, rawPassword)
         );
         assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
         verify(userRepository, never()).save(any(User.class));
@@ -376,7 +380,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("회원 탈퇴 실패 - 이메일과 비밀번호로 탈퇴 시 비밀번호 불일치")
-    void withdrawUserWithPassword_Fail_InvalidPassword() {
+    void withdrawCurrentUserWithPassword_Fail_InvalidPassword() {
         // Given
         String email = "test@example.com";
         String rawPassword = "wrong_password";
@@ -392,7 +396,7 @@ class UserServiceTest {
 
         // When & Then
         BusinessException thrown = assertThrows(BusinessException.class, () ->
-                userService.withdrawUserWithPassword(email, rawPassword)
+                userService.withdrawCurrentUserWithPassword(email, rawPassword)
         );
         assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.INVALID_PASSWORD);
         verify(userRepository, never()).save(any(User.class));
@@ -400,7 +404,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("회원 탈퇴 실패 - 이메일과 비밀번호로 탈퇴 시 이미 DELETED 상태")
-    void withdrawUserWithPassword_Fail_AlreadyDeleted() {
+    void withdrawCurrentUserWithPassword_Fail_AlreadyDeleted() {
         // Given
         String email = "test@example.com";
         String rawPassword = "password123!";
@@ -414,9 +418,13 @@ class UserServiceTest {
         given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
         given(passwordEncoder.matches(rawPassword, encodedPassword)).willReturn(true); // 비밀번호는 일치한다고 가정
 
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(email, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
         // When & Then
         BusinessException thrown = assertThrows(BusinessException.class, () ->
-                userService.withdrawUserWithPassword(email, rawPassword)
+                userService.withdrawCurrentUserWithPassword(email, rawPassword)
         );
         assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.USER_ALREADY_DELETED);
         verify(userRepository, never()).save(any(User.class));

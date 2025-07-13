@@ -8,6 +8,7 @@ import com.cMall.feedShop.user.domain.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,27 +45,20 @@ public class UserController {
         return response;
     }
 
-    // 사용자 프로필을 조회하는 예시 메서드
-//    @GetMapping("/{userId}/profile")
-//    public UserProfileResponse getUserProfile(@PathVariable Long userId) {
-//        // userProfileService를 사용하여 실제 비즈니스 로직 호출
-//        UserProfileResponse response = userProfileService.getUserProfile(userId);
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        return response;
-//    }
-
     // 관리자가 이메일로 사용자 탈퇴 처리
     // (관리자 권한 필요)
-    @DeleteMapping("/admin/by-email/{email}") // 경로를 변경하여 중복 방지
+    @DeleteMapping("/admin/by-email/{email}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> adminWithdrawUserByEmail(@PathVariable String email) {
         userService.adminWithdrawUserByEmail(email); // 새로운 Service 메서드 호출
         return ResponseEntity.ok("사용자 탈퇴 처리 완료 (관리자)");
     }
 
     // 사용자가 자신의 계정을 이메일과 비밀번호로 탈퇴
-    @DeleteMapping("/withdraw") // 로그인한 사용자가 자신의 계정을 탈퇴하는 경우, ID나 이메일을 PathVariable로 받기보다 Body로 받는 것을 권장하거나 @AuthenticationPrincipal 사용
-    public ResponseEntity<String> withdrawUser(@RequestBody UserWithdrawRequest request) { // UserWithdrawRequest DTO 필요
-        userService.withdrawUserWithPassword(request.getEmail(), request.getPassword());
+    @DeleteMapping("/withdraw")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> withdrawUser(@RequestBody UserWithdrawRequest request) {
+        userService.withdrawCurrentUserWithPassword(request.getEmail(), request.getPassword());
         return ResponseEntity.ok("회원 탈퇴 처리 완료");
     }
 }

@@ -87,7 +87,7 @@ public class ProductService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        if (user.getRole() != UserRole.ROLE_SELLER) {
+        if (user.getRole() != UserRole.SELLER) {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
     }

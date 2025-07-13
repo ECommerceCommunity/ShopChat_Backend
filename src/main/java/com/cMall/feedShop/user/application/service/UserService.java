@@ -12,6 +12,8 @@ import com.cMall.feedShop.user.domain.model.UserProfile;
 import com.cMall.feedShop.user.domain.repository.UserProfileRepository;
 import com.cMall.feedShop.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -228,7 +230,18 @@ public class UserService {
 
     // 3. 사용자용: 이메일과 비밀번호 확인으로 회원 탈퇴 (보안 강화) - 기존 코드 유지
     @Transactional
-    public void withdrawUserWithPassword(String email, String rawPassword) {
+    public void withdrawCurrentUserWithPassword(String email, String rawPassword) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "로그인된 사용자만 탈퇴할 수 있습니다.");
+        }
+        String currentLoggedInUserEmail = authentication.getName();
+        System.out.println("currentLoggedInUserEmail: " + currentLoggedInUserEmail);
+
+        if (!currentLoggedInUserEmail.equals(email)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "다른 사용자의 계정을 탈퇴할 수 없습니다.");
+        }
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND,"사용자를 찾을 수 없습니다. 이메일: " + email));
 

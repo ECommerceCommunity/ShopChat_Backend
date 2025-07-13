@@ -6,7 +6,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 
-//@ActiveProfiles("test")
+@ActiveProfiles("test")
 @SpringBootTest
 class FeedShopApplicationTests {
 
