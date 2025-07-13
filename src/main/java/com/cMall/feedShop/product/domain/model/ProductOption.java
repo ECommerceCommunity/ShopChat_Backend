@@ -19,7 +19,7 @@ public class ProductOption {
     private Long optionId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "gender")
+    @Column(name = "gender", length = 50)
     private Gender gender;
 
     @Convert(converter = SizeConverter.class)
@@ -27,7 +27,7 @@ public class ProductOption {
     private Size size;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "color")
+    @Column(name = "color", length = 50)
     private Color color;
 
     @Column(name = "stock")

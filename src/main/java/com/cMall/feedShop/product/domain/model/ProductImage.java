@@ -19,7 +19,7 @@ public class ProductImage {
     private String url;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="type", nullable = false)
+    @Column(name="type", length = 50, nullable = false)
     private ImageType type;
 
     @ManyToOne(fetch = FetchType.LAZY)
