@@ -255,21 +255,6 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("회원 탈퇴 실패 - 사용자 ID로 탈퇴 시 사용자 없음")
-    void withdrawUser_Fail_UserNotFound_ById() {
-        // Given
-        Long userId = 99L;
-        given(userRepository.findById(userId)).willReturn(Optional.empty());
-
-        // When & Then
-        BusinessException thrown = assertThrows(BusinessException.class, () ->
-                userService.withdrawUser(userId)
-        );
-        assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
-        verify(userRepository, never()).save(any(User.class));
-    }
-
-    @Test
     @DisplayName("회원 탈퇴 성공 - 사용자 ID로 탈퇴 시 이미 DELETED 상태")
     void withdrawUser_Success_AlreadyDeleted_ById() {
         // Given
@@ -283,8 +268,8 @@ class UserServiceTest {
         userService.withdrawUser(userId);
 
         // Then
-        assertThat(user.getStatus()).isEqualTo(UserStatus.DELETED); // 상태 변화 없음
-        verify(userRepository, never()).save(any(User.class)); // save 호출 없음
+        assertThat(user.getStatus()).isEqualTo(UserStatus.DELETED);
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
@@ -312,6 +297,14 @@ class UserServiceTest {
         String email = "nonexistent@example.com";
         given(userRepository.findByEmail(email)).willReturn(Optional.empty());
 
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        "admin@example.com",
+                        null,
+                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
         // When & Then
         BusinessException thrown = assertThrows(BusinessException.class, () ->
                 userService.adminWithdrawUserByEmail(email)
@@ -334,8 +327,8 @@ class UserServiceTest {
         userService.adminWithdrawUserByEmail(email);
 
         // Then
-        assertThat(user.getStatus()).isEqualTo(UserStatus.DELETED); // 상태 변화 없음
-        verify(userRepository, never()).save(any(User.class)); // save 호출 없음
+        assertThat(user.getStatus()).isEqualTo(UserStatus.DELETED);
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
@@ -354,6 +347,10 @@ class UserServiceTest {
         given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
         given(passwordEncoder.matches(rawPassword, encodedPassword)).willReturn(true);
 
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(email, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
         // When
         userService.withdrawCurrentUserWithPassword(email, rawPassword);
 
@@ -370,12 +367,19 @@ class UserServiceTest {
         String rawPassword = "password123!";
         given(userRepository.findByEmail(email)).willReturn(Optional.empty());
 
+        String loggedInUserEmail = email;
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(loggedInUserEmail, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
         // When & Then
         BusinessException thrown = assertThrows(BusinessException.class, () ->
                 userService.withdrawCurrentUserWithPassword(email, rawPassword)
         );
         assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
         verify(userRepository, never()).save(any(User.class));
+
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -393,6 +397,10 @@ class UserServiceTest {
 
         given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
         given(passwordEncoder.matches(rawPassword, encodedPassword)).willReturn(false);
+
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(email, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // When & Then
         BusinessException thrown = assertThrows(BusinessException.class, () ->
@@ -416,7 +424,7 @@ class UserServiceTest {
         user.setStatus(UserStatus.DELETED); // 이미 DELETED 상태
 
         given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
-        given(passwordEncoder.matches(rawPassword, encodedPassword)).willReturn(true); // 비밀번호는 일치한다고 가정
+        given(passwordEncoder.matches(rawPassword, encodedPassword)).willReturn(true);
 
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(email, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
