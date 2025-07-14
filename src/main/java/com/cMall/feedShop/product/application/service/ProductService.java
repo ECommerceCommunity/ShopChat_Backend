@@ -112,7 +112,7 @@ public class ProductService {
         // 8. DB 저장
         productRepository.save(product);
     }
-
+  
     // 상품 삭제
     public void deleteProduct(Long productId) {
         // 1. 현재 사용자 ID 가져오기
