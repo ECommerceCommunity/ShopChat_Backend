@@ -103,15 +103,9 @@ public class JwtTokenProvider {
                 .getBody();
 
         String email = claims.getSubject();
-        String role = claims.get("role", String.class);
-
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
 
-        Collection<? extends GrantedAuthority> authorities = Arrays.stream(role.split(","))
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
-
-        return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
+        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 }
 
