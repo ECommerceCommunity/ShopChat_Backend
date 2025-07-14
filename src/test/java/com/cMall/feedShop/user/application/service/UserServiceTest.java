@@ -21,6 +21,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import com.cMall.feedShop.user.domain.exception.UserException;
+import org.junit.jupiter.api.AfterEach;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
@@ -37,6 +39,21 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private void setupAdminAuthentication() {
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        "admin@example.com",
+                        null,
+                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
 
     @Mock
     private UserRepository userRepository;
@@ -100,10 +117,10 @@ class UserServiceTest {
         given(userRepository.findByEmail(signUpRequest.getEmail())).willReturn(Optional.of(existingUser));
 
         // When & Then
-        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () ->
+        UserException thrown = assertThrows(UserException.class, () ->
                 userService.signUp(signUpRequest)
         );
-        assertThat(thrown.getMessage()).isEqualTo("이미 사용 중인 이메일입니다.");
+        assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.DUPLICATE_EMAIL);
         verify(emailService, never()).sendSimpleEmail(anyString(), anyString(), anyString());
     }
 
@@ -118,7 +135,6 @@ class UserServiceTest {
         // findByEmail로 중복 체크 (이메일 없음)
         given(userRepository.findByEmail(signUpRequest.getEmail())).willReturn(Optional.empty());
 
-        // passwordEncoder.encode()는 호출되지 않아야 함
         // save 동작 mock
         given(userRepository.save(any(User.class))).willAnswer(invocation -> {
             User savedUser = invocation.getArgument(0);
@@ -182,10 +198,10 @@ class UserServiceTest {
         given(userRepository.findByVerificationToken(token)).willReturn(Optional.of(user));
 
         // When & Then
-        RuntimeException thrown = assertThrows(RuntimeException.class, () ->
+        UserException thrown = assertThrows(UserException.class, () ->
                 userService.verifyEmail(token)
         );
-        assertThat(thrown.getMessage()).contains("인증 토큰이 만료되었습니다");
+        assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.VERIFICATION_TOKEN_EXPIRED);
         verify(userRepository, times(1)).save(user);
     }
 
@@ -198,10 +214,10 @@ class UserServiceTest {
         given(userRepository.findByVerificationToken(token)).willReturn(Optional.empty());
 
         // When & Then
-        RuntimeException thrown = assertThrows(RuntimeException.class, () ->
+        UserException thrown = assertThrows(UserException.class, () ->
                 userService.verifyEmail(token)
         );
-        assertThat(thrown.getMessage()).contains("유효하지 않거나 찾을 수 없는 인증 토큰");
+        assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.INVALID_VERIFICATION_TOKEN);
     }
 
     @Test
@@ -240,6 +256,7 @@ class UserServiceTest {
     @DisplayName("회원 탈퇴 성공 - 사용자 ID로 탈퇴")
     void withdrawUser_Success_ById() {
         // Given
+        setupAdminAuthentication();
         Long userId = 1L;
         User user = new User();
         user.setId(userId);
@@ -255,20 +272,21 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("회원 탈퇴 성공 - 사용자 ID로 탈퇴 시 이미 DELETED 상태")
-    void withdrawUser_Success_AlreadyDeleted_ById() {
+    @DisplayName("회원 탈퇴 실패 - 사용자 ID로 탈퇴 시 이미 DELETED 상태")
+    void withdrawUser_Fail_AlreadyDeleted_ById() {
         // Given
+        setupAdminAuthentication();
         Long userId = 1L;
         User user = new User();
         user.setId(userId);
         user.setStatus(UserStatus.DELETED);
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
-        // When
-        userService.withdrawUser(userId);
-
-        // Then
-        assertThat(user.getStatus()).isEqualTo(UserStatus.DELETED);
+        // When & Then
+        UserException thrown = assertThrows(UserException.class, () ->
+                userService.withdrawUser(userId)
+        );
+        assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.USER_ALREADY_DELETED);
         verify(userRepository, never()).save(any(User.class));
     }
 
@@ -276,6 +294,7 @@ class UserServiceTest {
     @DisplayName("회원 탈퇴 성공 - 관리자가 이메일로 탈퇴")
     void adminWithdrawUserByEmail_Success() {
         // Given
+        setupAdminAuthentication();
         String email = "test@example.com";
         User user = new User();
         user.setEmail(email);
@@ -306,7 +325,7 @@ class UserServiceTest {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // When & Then
-        BusinessException thrown = assertThrows(BusinessException.class, () ->
+        UserException thrown = assertThrows(UserException.class, () ->
                 userService.adminWithdrawUserByEmail(email)
         );
         assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
@@ -314,20 +333,21 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("회원 탈퇴 성공 - 관리자가 이메일로 탈퇴 시 이미 DELETED 상태")
-    void adminWithdrawUserByEmail_Success_AlreadyDeleted() {
+    @DisplayName("회원 탈퇴 실패 - 관리자가 이메일로 탈퇴 시 이미 DELETED 상태")
+    void adminWithdrawUserByEmail_Fail_AlreadyDeleted() {
         // Given
+        setupAdminAuthentication();
         String email = "test@example.com";
         User user = new User();
         user.setEmail(email);
         user.setStatus(UserStatus.DELETED);
         given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
 
-        // When
-        userService.adminWithdrawUserByEmail(email);
-
-        // Then
-        assertThat(user.getStatus()).isEqualTo(UserStatus.DELETED);
+        // When & Then
+        UserException thrown = assertThrows(UserException.class, () ->
+                userService.adminWithdrawUserByEmail(email)
+        );
+        assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.USER_ALREADY_DELETED);
         verify(userRepository, never()).save(any(User.class));
     }
 
@@ -373,7 +393,7 @@ class UserServiceTest {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // When & Then
-        BusinessException thrown = assertThrows(BusinessException.class, () ->
+        UserException thrown = assertThrows(UserException.class, () ->
                 userService.withdrawCurrentUserWithPassword(email, rawPassword)
         );
         assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
@@ -403,7 +423,7 @@ class UserServiceTest {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // When & Then
-        BusinessException thrown = assertThrows(BusinessException.class, () ->
+        UserException thrown = assertThrows(UserException.class, () ->
                 userService.withdrawCurrentUserWithPassword(email, rawPassword)
         );
         assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.INVALID_PASSWORD);
@@ -431,7 +451,7 @@ class UserServiceTest {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // When & Then
-        BusinessException thrown = assertThrows(BusinessException.class, () ->
+        UserException thrown = assertThrows(UserException.class, () ->
                 userService.withdrawCurrentUserWithPassword(email, rawPassword)
         );
         assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.USER_ALREADY_DELETED);
