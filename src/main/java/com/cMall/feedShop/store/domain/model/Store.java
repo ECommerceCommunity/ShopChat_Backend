@@ -1,5 +1,6 @@
 package com.cMall.feedShop.store.domain.model;
 
+import com.cMall.feedShop.common.BaseTimeEntity;
 import com.cMall.feedShop.product.domain.model.Product;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -15,7 +16,7 @@ import java.util.Objects;
 @Table(name = "stores")
 @Getter
 @NoArgsConstructor
-public class Store {
+public class Store extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "store_id")
@@ -30,17 +31,11 @@ public class Store {
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL)
     private List<Product> products = new ArrayList<>();
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description")
     private String description;
 
     @Column(name = "logo")
     private String logo;
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
@@ -51,7 +46,6 @@ public class Store {
         this.sellerId = sellerId;
         this.description = description;
         this.logo = logo;
-        this.createdAt = LocalDateTime.now();
     }
 
     public boolean isManagedBy(Long userId) {

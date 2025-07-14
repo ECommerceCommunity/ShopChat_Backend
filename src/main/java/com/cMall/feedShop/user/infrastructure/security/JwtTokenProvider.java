@@ -94,18 +94,23 @@ public class JwtTokenProvider {
                 .getSubject();
     }
 
-    // JWT 토큰으로부터 인증 객체를 생성
     public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-        String email = claims.getSubject();
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
-
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
-    }
+    Claims claims = Jwts.parserBuilder()
+            .setSigningKey(key)
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
+    String email = claims.getSubject();
+    UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+    
+    // JWT에 role이 있으면 사용, 없으면 UserDetails에서 가져오기
+    String role = claims.get("role", String.class);
+    Collection<? extends GrantedAuthority> authorities = 
+        (role != null) ? 
+            Arrays.stream(role.split(",")).map(SimpleGrantedAuthority::new).collect(Collectors.toList()) :
+            userDetails.getAuthorities();
+            
+    return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
+  }
 }
 

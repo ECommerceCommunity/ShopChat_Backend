@@ -104,7 +104,6 @@ public class UserService {
         user.setVerificationToken(verificationToken);
         user.setVerificationTokenExpiry(tokenExpiryTime);
 
-        // 6. UserProfile 엔티티 생성
         UserProfile userProfile = new UserProfile(
                 user,
                 request.getName(),
@@ -114,7 +113,7 @@ public class UserService {
 
         user.setUserProfile(userProfile);
 
-        userRepository.save(user); // User에 cascade = CascadeType.ALL 설정 시 UserProfile도 함께 저장됨
+        userRepository.save(user);
 
 
         // 이메일 전송
@@ -185,12 +184,9 @@ public class UserService {
     @Transactional
     public void withdrawUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND,"사용자를 찾을 수 없습니다. ID: " + userId)); // UserNotFoundException 사용
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND,"사용자를 찾을 수 없습니다. ID: " + userId));
 
-        // 이미 DELETED 상태라면 다시 처리할 필요 없음
         if (user.getStatus() == UserStatus.DELETED) {
-            // 이미 탈퇴 처리된 계정에 대한 로직을 어떻게 할지는 비즈니스 요구사항에 따라 결정
-            // 예를 들어, 예외를 던지거나, 단순히 로그를 남기고 종료할 수 있습니다.
             return;
         }
 
@@ -210,12 +206,9 @@ public class UserService {
     public void adminWithdrawUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND,"사용자를 찾을 수 없습니다. 이메일: " + email));
-
         if (user.getStatus() == UserStatus.DELETED) {
             return;
         }
-
-        // 소프트 삭제: 상태를 DELETED로 변경
         user.setStatus(UserStatus.DELETED);
         userRepository.save(user);
 
@@ -237,17 +230,14 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND,"사용자를 찾을 수 없습니다. 이메일: " + email));
 
-        // 비밀번호 일치 여부 확인
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new BusinessException(ErrorCode.INVALID_PASSWORD,"비밀번호가 일치하지 않습니다.");
         }
 
-        // 이미 DELETED 상태라면 다시 처리할 필요 없음
         if (user.getStatus() == UserStatus.DELETED) {
-            throw new BusinessException(ErrorCode.USER_ALREADY_DELETED,"이미 탈퇴 처리된 계정입니다."); // 사용자에게 알림 필요
+            throw new BusinessException(ErrorCode.USER_ALREADY_DELETED,"이미 탈퇴 처리된 계정입니다.");
         }
 
-        // 소프트 삭제: 상태를 DELETED로 변경
         user.setStatus(UserStatus.DELETED);
         userRepository.save(user);
 
