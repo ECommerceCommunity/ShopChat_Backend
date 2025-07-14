@@ -31,6 +31,7 @@ jobs:
         run: ./gradlew test --continue
         env:
           SPRING_PROFILES_ACTIVE: test
+          
 
 
       - name: Generate Test Coverage Report
@@ -48,6 +49,9 @@ jobs:
         #   DB_PORT: ${{ secrets.DB_PORT_PROD }}
         #   SPRING_PROFILES_ACTIVE: production # 만약 빌드 시에 'production' 프로파일을 사용하고 싶다면
         run: ./gradlew build -x test
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
 
       - name: Upload Test Results
         if: always()
