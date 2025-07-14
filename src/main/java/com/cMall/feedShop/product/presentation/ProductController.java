@@ -15,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
+//@Tag(name = "상품 조회", description = "상품 목록과 상세 정보를 조회하는 API 입니다.")
 public class ProductController {
     private final ProductReadService productReadService;
     private final CategoryService categoryService;

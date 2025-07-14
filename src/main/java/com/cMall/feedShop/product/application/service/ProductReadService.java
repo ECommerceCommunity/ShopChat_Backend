@@ -39,7 +39,7 @@ public class ProductReadService {
         Pageable pageable = PageRequest.of(page, size);
 
         // 삭제되지 않은 상품들을 Store, 이미지와 함께 조회. (모든 상품을 페이지별로)
-        Page<Product> productPage = productRepository.findByDeletedAtIsNullOrderByCreatedAtDesc(pageable);
+        Page<Product> productPage = productRepository.findAllByOrderByCreatedAtDesc(pageable);
 
         // 각각의 상품(Product 엔티티)을 ProductListResponse(응답값)로 변환한다.
         Page<ProductListResponse> responsePage = productPage.map(this::convertToProductListResponse);
@@ -50,7 +50,7 @@ public class ProductReadService {
 
     // 상품 상세 조회
     public ProductDetailResponse getProductDetail(Long productId) {
-        Product product = productRepository.findByProductIdAndDeletedAtIsNull(productId)
+        Product product = productRepository.findByProductId(productId)
                 .orElseThrow(() -> new ProductException.ProductNotFoundException());
 
         // productOptions 지연 로딩 강제 초기화

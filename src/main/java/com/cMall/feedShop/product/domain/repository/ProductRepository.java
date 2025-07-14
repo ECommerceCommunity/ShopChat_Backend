@@ -12,9 +12,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     // 상품 목록 조회 (store, productImages 포함)
     @EntityGraph(attributePaths = {"store", "category", "productImages"})
-    Page<Product> findByDeletedAtIsNullOrderByCreatedAtDesc(Pageable pageable);
+    Page<Product> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     // 상품 상세 조회 (모든 연관 포함)
     @EntityGraph(attributePaths = {"store", "category", "productImages"})
-    Optional<Product> findByProductIdAndDeletedAtIsNull(Long productId);
+    Optional<Product> findByProductId(Long productId);
 }
