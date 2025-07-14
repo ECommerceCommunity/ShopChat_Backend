@@ -30,6 +30,7 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND(404, "P001", "상품을 찾을 수 없습니다."),
     CATEGORY_NOT_FOUND(404, "P002", "카테고리를 찾을 수 없습니다."),
     OUT_OF_STOCK(409, "P003", "재고가 부족합니다."),
+    PRODUCT_IN_ORDER(409, "P004", "상품이 주문에 포함되어 있어 삭제할 수 없습니다."),
 
     // 주문
     ORDER_NOT_FOUND(404, "O001", "주문을 찾을 수 없습니다."),

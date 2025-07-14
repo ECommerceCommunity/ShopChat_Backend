@@ -49,8 +49,11 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/auth/signup", "/api/auth/verify-email",
-                                "/public/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/signup", "/public/**",
+                                "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
+                                "/api/products", "/api/products/**").permitAll()
+                        .requestMatchers("/api/seller/**").hasRole("SELLER")
+
                         .anyRequest().authenticated()
                 )
                 // 폼 로그인 및 HTTP Basic 인증은 사용하지 않음
