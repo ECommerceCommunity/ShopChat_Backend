@@ -31,7 +31,7 @@ jobs:
         run: ./gradlew test --continue
         env:
           SPRING_PROFILES_ACTIVE: test
-          
+          APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
 
       - name: Generate Test Coverage Report
         run: ./gradlew jacocoTestReport
@@ -73,3 +73,4 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
