@@ -15,6 +15,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Entity
@@ -33,7 +34,7 @@ public class Product extends BaseTimeEntity {
     @Column(name = "price", nullable = false)
     private BigDecimal price;
 
-    @Column(name = "description")
+    @Column(name = "description", length = 1000)
     private String description;
 
     @Column(name = "wish_number", nullable = false, columnDefinition = "int default 0")
@@ -77,7 +78,7 @@ public class Product extends BaseTimeEntity {
     public String getMainImageUrl() {
         return productImages.stream()
                 .filter(image -> ImageType.MAIN.equals(image.getType()))
-                .findFirst()
+                .min(Comparator.comparing(ProductImage::getImageId))
                 .map(ProductImage::getUrl)
                 .orElse(null);
     }
