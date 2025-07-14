@@ -95,7 +95,7 @@ public class UserService {
                 UserRole.USER
         );
         user.setStatus(UserStatus.PENDING);
-        user.setPasswordChangedAt(LocalDateTime.now()); // 초기 비밀번호 변경 시간 설정
+        user.setPasswordChangedAt(LocalDateTime.now());
 
         String verificationToken = UUID.randomUUID().toString();
 
@@ -154,9 +154,6 @@ public class UserService {
         User user = userRepository.findByVerificationToken(token)
                 .orElseThrow(() -> new RuntimeException("유효하지 않거나 찾을 수 없는 인증 토큰입니다."));
 
-
-        // 토큰이 유효한지 (만료되지 않았는지, 이미 사용되었는지) 확인합니다.
-
         if (user.getStatus() == UserStatus.ACTIVE) {
             user.setVerificationToken(null);
             user.setVerificationTokenExpiry(null);
@@ -168,8 +165,6 @@ public class UserService {
             throw new RuntimeException("인증 토큰이 유효하지 않습니다.");
         }
 
-        // 토큰이 만료되었는지 확인
-        // verificationTokenExpiry가 null이거나 현재 시간보다 이전이면 만료된 것으로 간주
         if (user.getVerificationTokenExpiry() == null || user.getVerificationTokenExpiry().isBefore(LocalDateTime.now())) {
 
             user.setVerificationToken(null);
@@ -196,7 +191,7 @@ public class UserService {
         if (user.getStatus() == UserStatus.DELETED) {
             // 이미 탈퇴 처리된 계정에 대한 로직을 어떻게 할지는 비즈니스 요구사항에 따라 결정
             // 예를 들어, 예외를 던지거나, 단순히 로그를 남기고 종료할 수 있습니다.
-            return; // 이미 탈퇴된 경우 추가 처리 없이 종료
+            return;
         }
 
         // 옵션 A: 사용자 상태를 DELETED로 변경 (소프트 삭제) - 일반적으로 선호
@@ -216,9 +211,8 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND,"사용자를 찾을 수 없습니다. 이메일: " + email));
 
-        // 이미 DELETED 상태라면 다시 처리할 필요 없음
         if (user.getStatus() == UserStatus.DELETED) {
-            return; // 이미 탈퇴된 경우 추가 처리 없이 종료
+            return;
         }
 
         // 소프트 삭제: 상태를 DELETED로 변경
@@ -236,8 +230,6 @@ public class UserService {
             throw new BusinessException(ErrorCode.UNAUTHORIZED, "로그인된 사용자만 탈퇴할 수 있습니다.");
         }
         String currentLoggedInUserEmail = authentication.getName();
-        System.out.println("currentLoggedInUserEmail: " + currentLoggedInUserEmail);
-
         if (!currentLoggedInUserEmail.equals(email)) {
             throw new BusinessException(ErrorCode.FORBIDDEN, "다른 사용자의 계정을 탈퇴할 수 없습니다.");
         }
