@@ -99,6 +99,7 @@ jacocoTestReport {
 	// html.outputLocation = file("${buildDir}/reports/jacoco/html") // HTML 리포트 출력 경로 (선택 사항)
 }
 // SonarCloud 설정 추가
+// SonarCloud 설정 추가
 sonar {
 	properties {
 		property "sonar.projectKey", "ECommerceCommunity_FeedShop_Backend"
@@ -111,5 +112,20 @@ sonar {
 		// Jacoco XML 리포트 파일의 경로를 SonarCloud에 알려줍니다.
 		// Jacoco 설정을 통해 생성되는 기본 경로와 일치하는지 확인하세요.
 		property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+
+		// 분석에서 제외할 파일이나 디렉토리를 지정할 수 있습니다. (선택 사항)
+		// property "sonar.exclusions", "**/generated/**, **/*.html"
+		// property "sonar.test.exclusions", "**/*Test.java" // 테스트 파일 제외 예시
 	}
-} 
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+	testLogging {
+		events "passed", "skipped", "failed", "standardOut", "standardError"
+		showExceptions true
+		exceptionFormat "full" // 스택 트레이스를 전체 출력
+		showStandardStreams true // System.out, System.err로 출력되는 내용도 포함
+	}
+}
