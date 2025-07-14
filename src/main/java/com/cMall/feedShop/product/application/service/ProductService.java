@@ -3,27 +3,32 @@ package com.cMall.feedShop.product.application.service;
 import com.cMall.feedShop.common.exception.BusinessException;
 import com.cMall.feedShop.common.exception.ErrorCode;
 import com.cMall.feedShop.product.application.dto.request.ProductCreateRequest;
+import com.cMall.feedShop.product.application.dto.request.ProductImageRequest;
+import com.cMall.feedShop.product.application.dto.request.ProductOptionRequest;
+import com.cMall.feedShop.product.application.dto.request.ProductUpdateRequest;
 import com.cMall.feedShop.product.application.dto.response.ProductCreateResponse;
-import com.cMall.feedShop.product.application.dto.response.ProductListResponse;
-import com.cMall.feedShop.product.application.dto.response.ProductPageResponse;
+import com.cMall.feedShop.product.application.exception.ProductException;
 import com.cMall.feedShop.product.domain.model.Category;
 import com.cMall.feedShop.product.domain.model.Product;
+import com.cMall.feedShop.product.domain.model.ProductImage;
+import com.cMall.feedShop.product.domain.model.ProductOption;
 import com.cMall.feedShop.product.domain.repository.CategoryRepository;
+import com.cMall.feedShop.product.domain.repository.ProductImageRepository;
+import com.cMall.feedShop.product.domain.repository.ProductOptionRepository;
 import com.cMall.feedShop.product.domain.repository.ProductRepository;
-import com.cMall.feedShop.product.application.util.DiscountCalculator;
+import com.cMall.feedShop.store.application.exception.StoreException;
 import com.cMall.feedShop.store.domain.model.Store;
 import com.cMall.feedShop.store.domain.repository.StoreRepository;
 import com.cMall.feedShop.user.domain.enums.UserRole;
 import com.cMall.feedShop.user.domain.model.User;
 import com.cMall.feedShop.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -33,10 +38,11 @@ public class ProductService {
     private final StoreRepository storeRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
-    private final DiscountCalculator discountCalculator;
+    private final ProductImageRepository productImageRepository;
+    private final ProductOptionRepository productOptionRepository;
 
-    public ProductCreateResponse createProduct(ProductCreateRequest request)
-    {
+    // 상품 등록
+    public ProductCreateResponse createProduct(ProductCreateRequest request) {
         // 1. 현재 사용자 ID 가져오기
         Long currentUserId = getCurrentUserId();
 
@@ -44,19 +50,12 @@ public class ProductService {
         validateSellerPermission(currentUserId);
 
         // 3. 사용자 스토어 찾기
-        Store userStore = storeRepository.findBySellerId(currentUserId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.STORE_NOT_FOUND));
+        Store userStore = getUserStore(currentUserId);
 
-        // 4. 스토어 관리 권한 확인
-        if (!userStore.isManagedBy(currentUserId)) {
-            throw new BusinessException(ErrorCode.STORE_FORBIDDEN);
-        }
+        // 4. 카테고리 존재 확인
+        Category category = getCategory(request.getCategoryId());
 
-        // 5. 카테고리 존재 확인
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
-
-        // 6. 상품 생성
+        // 5. 상품 생성
         Product product = Product.builder()
                 .name(request.getName())
                 .price(request.getPrice())
@@ -67,22 +66,89 @@ public class ProductService {
                 .category(category)
                 .build();
 
-        // 7. DB 저장
+        // 7. 상품 이미지 생성 및 저장 (메모리상에서만)
+        createProductImages(product, request.getImages());
+
+        // 8. 상품에 옵션 추가 (메모리상에서만)
+        createProductOptions(product, request.getOptions());
+
+        // 9. DB 저장
         Product savedProduct = productRepository.save(product);
 
-        // 8. 응답값 리턴
+        // 10. 응답값 리턴
         return ProductCreateResponse.of(savedProduct.getProductId());
     }
 
-    // JWT 에서 현재 사용자 ID 추출 (추후 구현)
+    // 상품 수정
+    public void updateProduct(Long productId, ProductUpdateRequest request) {
+        // 1. 현재 사용자 ID 가져오기
+        Long currentUserId = getCurrentUserId();
+
+        // 2. 판매자 권한 검증
+        validateSellerPermission(currentUserId);
+
+        // 3. 상품 조회 (소유권 검증 포함)
+        Product product = getProductOwnership(productId, currentUserId);
+
+        // 4. 카테고리 존재 확인
+        Category category = null;
+        if (request.getCategoryId() != null) {
+            category = getCategory(request.getCategoryId());
+        }
+
+        // 5. 상품 필드 업데이트
+        updateProductFields(product, request, category);
+
+        // 6. 이미지 업데이트
+        if (request.getImages() != null) {
+            updateProductImages(product, request.getImages());
+        }
+
+        // 7. 옵션 업데이트
+        if (request.getOptions() != null) {
+            updateProductOptions(product, request.getOptions());
+        }
+
+        // 8. DB 저장
+        productRepository.save(product);
+    }
+  
+    // 상품 삭제
+    public void deleteProduct(Long productId) {
+        // 1. 현재 사용자 ID 가져오기
+        Long currentUserId = getCurrentUserId();
+
+        // 2. 판매자 권한 검증
+        validateSellerPermission(currentUserId);
+
+        // 3. 상품 조회 (소유권 검증 포함)
+        Product product = getProductOwnership(productId, currentUserId);
+
+        // 4. 주문에 포함된 상품인지 확인
+        validateProductNotInOrders(productId);
+
+        // 5. DB 에서 삭제 (CASCADE DELETE)
+        productRepository.delete(product);
+    }
+
+    // JWT 에서 현재 사용자 ID 추출
     private Long getCurrentUserId() {
-        // JWT 토큰에서 사용자 ID 추출
-        return 2L; // 임시. 현재 DB에 SELLER 권한 임시 유저의 id가 2임.
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() ) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED);
+        }
+
+        String login_id = authentication.getName();
+
+        User user = userRepository.findByLoginId(login_id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        return user.getId();
     }
 
     // 판매자 권한 검증
     private void validateSellerPermission(Long userId) {
-        // 사용자가 ROLE_SELLER 권한을 가지고 있는지 확인
+        // 사용자가 SELLER 권한을 가지고 있는지 확인
         // UserRepository 에서 사용자 조회 후 role 확인
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
@@ -92,50 +158,122 @@ public class ProductService {
         }
     }
 
-    @Transactional(readOnly = true)
-    public ProductPageResponse getProductList(int page, int size) {
-        if (page < 0) {
-            page = 0;
-        }
-
-        // 기본값 20, 최대 100
-        if (size < 1 || size > 100) {
-            size = 20;
-        }
-
-        Pageable pageable = PageRequest.of(page, size);
-
-        // 삭제되지 않은 상품들을 Store와 함께 조회. (모든 상품을 페이지별로)
-        Page<Product> productPage = productRepository.findByDeletedAtIsNullOrderByCreatedAtDesc(pageable);
-
-        // 각각의 상품(Product 엔티티)을 ProductListResponse(응답값)로 변환한다.
-        Page<ProductListResponse> responsePage = productPage.map(this::convertToProductListResponse);
-
-        // ProductPageResponse 에서 상품 리스트 묶어서 페이지 정보 추가. 최종 응답값 리턴
-        return ProductPageResponse.of(responsePage);
+    // 스토어 조회
+    private Store getUserStore(Long userId) {
+        // 내 가게를 찾는다.
+        return storeRepository.findBySellerId(userId)
+                .orElseThrow(() -> new StoreException.StoreNotFoundException());
     }
 
-    /**
-     * 각각의 상품들을 ProductListResponse로 변환한다.
-     */
-    private ProductListResponse convertToProductListResponse(Product product) {
+    // 카테고리 조회
+    private Category getCategory(Long categoryId) {
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ProductException.CategoryNotFoundException());
+    }
 
-        // 할인가를 계산한다.
-        BigDecimal discountPrice = discountCalculator.calculateDiscountPrice(
-                product.getPrice(),
-                product.getDiscountType(),
-                product.getDiscountValue()
-        );
+    // 상품 조회 및 소유권 검증
+    private Product getProductOwnership(Long productId, Long currentUserId) {
+        // 상품을 찾는다.
+        Product product = productRepository.findByProductId(productId)
+                .orElseThrow(() -> new ProductException.ProductNotFoundException());
 
-        // ProductListResponse 에서 응답값(상품 정보)을 생성해준다.
-        return ProductListResponse.of(
-                product.getProductId(),
-                product.getName(),
-                product.getPrice(),
-                discountPrice,
-                product.getStore().getStoreId(),
-                product.getStore().getStoreName(),
-                product.getWishNumber()
-        );
+        // 상품 소유권 검증
+        Store store = product.getStore();
+        if (!store.isManagedBy(currentUserId)) {
+            throw new StoreException.StoreForbiddenException();
+        }
+
+        return product;
+    }
+
+    // 주문에 포함된 상품인지 확인
+    private void validateProductNotInOrders(Long productId) {
+        // 주문 도메인 작업할때 진행
+    }
+
+    // 상품 이미지 생성
+    private void createProductImages(Product product, List<ProductImageRequest> requests)
+    {
+        List<ProductImage> productImages = requests.stream()
+                .map(request -> new ProductImage(
+                        request.getUrl(),
+                        request.getType(),
+                        product
+                ))
+                .toList();
+
+        // Product 엔티티에 이미지 추가
+        product.getProductImages().addAll(productImages);
+    }
+
+    // 상품 옵션 생성
+    public void createProductOptions(Product product, List<ProductOptionRequest> requests)
+    {
+        List<ProductOption> productOptions = requests.stream()
+                .map(request -> new ProductOption(
+                        request.getGender(),
+                        request.getSize(),
+                        request.getColor(),
+                        request.getStock(),
+                        product
+                ))
+                .toList();
+
+        // Product 엔티티에 옵션 추가
+        product.getProductOptions().addAll(productOptions);
+    }
+
+    // 상품 필드 업데이트
+    private void updateProductFields(Product product, ProductUpdateRequest request, Category category) {
+        // 기본 필드 업데이트
+        product.updateInfo(request.getName(), request.getPrice(), request.getDescription());
+
+        // 할인 정보 업데이트
+        product.updateDiscount(request.getDiscountType(), request.getDiscountValue());
+
+        // 카테고리 업데이트
+        product.updateCategory(category);
+    }
+
+    private void updateProductImages(Product product, List<ProductImageRequest> requests) {
+        // 기존 이미지 삭제
+        List<ProductImage> existingImages = product.getProductImages();
+        if (!existingImages.isEmpty())
+        {
+            productImageRepository.deleteAll(existingImages);
+            existingImages.clear();
+        }
+
+        // 새로운 이미지 추가
+        List<ProductImage> newImages = requests.stream()
+                .map(request -> new ProductImage(
+                        request.getUrl(),
+                        request.getType(),
+                        product
+                ))
+                .toList();
+        product.getProductImages().addAll(newImages);
+    }
+
+    private void updateProductOptions(Product product, List<ProductOptionRequest> requests) {
+        // 기존 옵션 삭제
+        List<ProductOption> existingOptions = product.getProductOptions();
+        if (!existingOptions.isEmpty())
+        {
+            productOptionRepository.deleteAll(existingOptions);
+            existingOptions.clear();
+        }
+
+        // 새로운 옵션 추가
+        List<ProductOption> newOptions = requests.stream()
+                .map(request -> new ProductOption(
+                        request.getGender(),
+                        request.getSize(),
+                        request.getColor(),
+                        request.getStock(),
+                        product
+                ))
+                .toList();
+        product.getProductOptions().addAll(newOptions);
     }
 }

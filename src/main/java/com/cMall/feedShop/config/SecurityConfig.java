@@ -50,10 +50,20 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/auth/signup", "/api/auth/verify-email",
-                                "/public/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
-                        .requestMatchers("/api/users/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
+                    .requestMatchers(
+                      "/api/auth/login",
+                      "/api/auth/signup",
+                      "/api/auth/verify-email", // develop 브랜치에 있던 내용
+                      "/public/**",
+                      "/swagger-ui/**",
+                      "/v3/api-docs/**",
+                      "/swagger-resources/**",
+                      "/api/products", // 현재 브랜치에 있던 내용
+                      "/api/products/**" // 현재 브랜치에 있던 내용
+                    ).permitAll()
+                    .requestMatchers("/api/users/admin/**").hasRole("ADMIN") 
+                    .requestMatchers("/api/seller/**").hasRole("SELLER")
+                    .anyRequest().authenticated()
                 )
                 // 폼 로그인 및 HTTP Basic 인증은 사용하지 않음
                 .formLogin(formLogin -> formLogin.disable())

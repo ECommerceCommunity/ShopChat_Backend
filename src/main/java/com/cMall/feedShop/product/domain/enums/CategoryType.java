@@ -2,8 +2,10 @@ package com.cMall.feedShop.product.domain.enums;
 
 public enum CategoryType {
     SNEAKERS,
-    DRESS,
+    RUNNING,
     BOOTS,
     SANDALS,
-    CASUAL,
+    CONVERSE,
+    SPORTS,
+    DRESS
 }
