@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -24,6 +25,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@Slf4j
 //@EntityListeners(AuditingEntityListener.class)
 public class User extends BaseTimeEntity implements UserDetails {
 
@@ -96,7 +98,9 @@ public class User extends BaseTimeEntity implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // 사용자의 역할을 Spring Security의 권한(GrantedAuthority)으로 변환하여 반환합니다.
         // UserRole.USER -> new SimpleGrantedAuthority("USER")
-        return List.of(new SimpleGrantedAuthority("ROLE_"+this.role.name()));
+        Collection<? extends GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_"+this.role.name()));
+        log.debug("User entity authorities: {}", authorities);
+        return authorities;
     }
 
     @Override
