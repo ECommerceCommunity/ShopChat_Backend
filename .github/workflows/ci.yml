@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -31,7 +32,7 @@ jobs:
         env:
           SPRING_PROFILES_ACTIVE: test
           APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
-
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
       - name: Generate Test Coverage Report
         run: ./gradlew jacocoTestReport
 
@@ -48,7 +49,7 @@ jobs:
           name: test-results
           path: build/test-results/test/*.xml
 
-      - name: Upload Test Coverage
+      - name: Upload Test Coverage # 테스트 커버리지 보고서 아티팩트를 업로드합니다.
         if: always()
         uses: actions/upload-artifact@v4
         with:
