@@ -1,5 +1,7 @@
 package com.cMall.feedShop.user.application.service;
 
+import com.cMall.feedShop.common.exception.BusinessException;
+import com.cMall.feedShop.common.exception.ErrorCode;
 import com.cMall.feedShop.common.service.EmailService;
 import com.cMall.feedShop.user.application.dto.request.UserSignUpRequest;
 import com.cMall.feedShop.user.application.dto.response.UserResponse;
@@ -10,6 +12,8 @@ import com.cMall.feedShop.user.domain.model.UserProfile;
 import com.cMall.feedShop.user.domain.repository.UserProfileRepository;
 import com.cMall.feedShop.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
+
+import static com.cMall.feedShop.common.exception.ErrorCode.INVALID_PASSWORD;
+import static com.cMall.feedShop.common.exception.ErrorCode.USER_NOT_FOUND;
 
 @Service
 @Transactional
@@ -88,7 +95,7 @@ public class UserService {
                 UserRole.USER
         );
         user.setStatus(UserStatus.PENDING);
-        user.setPasswordChangedAt(LocalDateTime.now()); // 초기 비밀번호 변경 시간 설정
+        user.setPasswordChangedAt(LocalDateTime.now());
 
         String verificationToken = UUID.randomUUID().toString();
 
@@ -97,7 +104,6 @@ public class UserService {
         user.setVerificationToken(verificationToken);
         user.setVerificationTokenExpiry(tokenExpiryTime);
 
-        // 6. UserProfile 엔티티 생성
         UserProfile userProfile = new UserProfile(
                 user,
                 request.getName(),
@@ -107,7 +113,7 @@ public class UserService {
 
         user.setUserProfile(userProfile);
 
-        userRepository.save(user); // User에 cascade = CascadeType.ALL 설정 시 UserProfile도 함께 저장됨
+        userRepository.save(user);
 
 
         // 이메일 전송
@@ -147,9 +153,6 @@ public class UserService {
         User user = userRepository.findByVerificationToken(token)
                 .orElseThrow(() -> new RuntimeException("유효하지 않거나 찾을 수 없는 인증 토큰입니다."));
 
-
-        // 토큰이 유효한지 (만료되지 않았는지, 이미 사용되었는지) 확인합니다.
-
         if (user.getStatus() == UserStatus.ACTIVE) {
             user.setVerificationToken(null);
             user.setVerificationTokenExpiry(null);
@@ -161,8 +164,6 @@ public class UserService {
             throw new RuntimeException("인증 토큰이 유효하지 않습니다.");
         }
 
-        // 토큰이 만료되었는지 확인
-        // verificationTokenExpiry가 null이거나 현재 시간보다 이전이면 만료된 것으로 간주
         if (user.getVerificationTokenExpiry() == null || user.getVerificationTokenExpiry().isBefore(LocalDateTime.now())) {
 
             user.setVerificationToken(null);
@@ -177,5 +178,69 @@ public class UserService {
         user.setVerificationTokenExpiry(null);
 
         userRepository.save(user);
+    }
+
+    // 1. 사용자 ID로 회원 탈퇴 (관리자용 또는 내부 로직) - 기존 코드 유지
+    @Transactional
+    public void withdrawUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND,"사용자를 찾을 수 없습니다. ID: " + userId));
+
+        if (user.getStatus() == UserStatus.DELETED) {
+            return;
+        }
+
+        // 옵션 A: 사용자 상태를 DELETED로 변경 (소프트 삭제) - 일반적으로 선호
+        user.setStatus(UserStatus.DELETED);
+        userRepository.save(user);
+
+        // TODO: 사용자와 관련된 다른 데이터 (주문, 게시글, 댓글 등) 처리 로직 추가
+        // - 해당 사용자의 모든 게시글/댓글을 삭제 (Hard Delete) 또는 작성자를 '탈퇴한 사용자' 등으로 변경 (Soft Delete)
+        // - 해당 사용자의 주문 내역은 유지하되, 사용자 정보는 비식별화 (개인정보보호)
+        // - 예시: orderService.anonymizeUserOrders(userId);
+        // - 예시: boardService.updateAuthorToWithdrawn(userId);
+    }
+
+    // 2. 관리자용: 이메일로 사용자 탈퇴 (비밀번호 확인 불필요)
+    @Transactional
+    public void adminWithdrawUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND,"사용자를 찾을 수 없습니다. 이메일: " + email));
+        if (user.getStatus() == UserStatus.DELETED) {
+            return;
+        }
+        user.setStatus(UserStatus.DELETED);
+        userRepository.save(user);
+
+        // TODO: 위 withdrawUser 메서드와 동일하게 관련 데이터 처리 로직 추가
+    }
+
+    // 3. 사용자용: 이메일과 비밀번호 확인으로 회원 탈퇴 (보안 강화) - 기존 코드 유지
+    @Transactional
+    public void withdrawCurrentUserWithPassword(String email, String rawPassword) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "로그인된 사용자만 탈퇴할 수 있습니다.");
+        }
+        String currentLoggedInUserEmail = authentication.getName();
+        if (!currentLoggedInUserEmail.equals(email)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "다른 사용자의 계정을 탈퇴할 수 없습니다.");
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND,"사용자를 찾을 수 없습니다. 이메일: " + email));
+
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD,"비밀번호가 일치하지 않습니다.");
+        }
+
+        if (user.getStatus() == UserStatus.DELETED) {
+            throw new BusinessException(ErrorCode.USER_ALREADY_DELETED,"이미 탈퇴 처리된 계정입니다.");
+        }
+
+        user.setStatus(UserStatus.DELETED);
+        userRepository.save(user);
+
+        // TODO: 위 withdrawUser 메서드와 동일하게 관련 데이터 처리 로직 추가
     }
 }

@@ -13,19 +13,19 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI openAPI() {
-        String jwtSchemeName = "jwtAuth";
-        SecurityRequirement securityRequirement = new SecurityRequirement().addList(jwtSchemeName);
+        String securitySchemeName = "jwtAuth";
+        SecurityRequirement securityRequirement = new SecurityRequirement().addList(securitySchemeName);
 
         Components components = new Components()
-                .addSecuritySchemes(jwtSchemeName, new SecurityScheme()
-                        .name(jwtSchemeName)
-                        .type(SecurityScheme.Type.HTTP) // HTTP 인증 타입
-                        .scheme("bearer") // Bearer 토큰 방식
-                        .bearerFormat("JWT")); // JWT 포맷임을 명시
+                .addSecuritySchemes(securitySchemeName, new SecurityScheme()
+                        .name(securitySchemeName)
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT"));
 
         return new OpenAPI()
                 .components(components)
-                .info(apiInfo())
+                .info(apiInfo()) // ✅ API 정보 추가
                 .addSecurityItem(securityRequirement);
     }
 

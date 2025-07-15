@@ -1,6 +1,7 @@
-
 package com.cMall.feedShop.user.application.service;
 
+import com.cMall.feedShop.common.exception.BusinessException;
+import com.cMall.feedShop.common.exception.ErrorCode;
 import com.cMall.feedShop.common.service.EmailService;
 import com.cMall.feedShop.user.application.dto.request.UserSignUpRequest;
 import com.cMall.feedShop.user.application.dto.response.UserResponse;
@@ -17,9 +18,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -227,5 +232,209 @@ class UserServiceTest {
         // Then
         assertThat(isDuplicated).isFalse();
         verify(userRepository, times(1)).existsByEmail(newEmail); // existsByEmail 호출 확인
+    }
+
+    // --- 회원 탈퇴 테스트 ---
+
+    @Test
+    @DisplayName("회원 탈퇴 성공 - 사용자 ID로 탈퇴")
+    void withdrawUser_Success_ById() {
+        // Given
+        Long userId = 1L;
+        User user = new User();
+        user.setId(userId);
+        user.setStatus(UserStatus.ACTIVE);
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
+        // When
+        userService.withdrawUser(userId);
+
+        // Then
+        assertThat(user.getStatus()).isEqualTo(UserStatus.DELETED);
+        verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 성공 - 사용자 ID로 탈퇴 시 이미 DELETED 상태")
+    void withdrawUser_Success_AlreadyDeleted_ById() {
+        // Given
+        Long userId = 1L;
+        User user = new User();
+        user.setId(userId);
+        user.setStatus(UserStatus.DELETED);
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
+        // When
+        userService.withdrawUser(userId);
+
+        // Then
+        assertThat(user.getStatus()).isEqualTo(UserStatus.DELETED);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 성공 - 관리자가 이메일로 탈퇴")
+    void adminWithdrawUserByEmail_Success() {
+        // Given
+        String email = "test@example.com";
+        User user = new User();
+        user.setEmail(email);
+        user.setStatus(UserStatus.ACTIVE);
+        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+
+        // When
+        userService.adminWithdrawUserByEmail(email);
+
+        // Then
+        assertThat(user.getStatus()).isEqualTo(UserStatus.DELETED);
+        verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 실패 - 관리자가 이메일로 탈퇴 시 사용자 없음")
+    void adminWithdrawUserByEmail_Fail_UserNotFound() {
+        // Given
+        String email = "nonexistent@example.com";
+        given(userRepository.findByEmail(email)).willReturn(Optional.empty());
+
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        "admin@example.com",
+                        null,
+                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // When & Then
+        BusinessException thrown = assertThrows(BusinessException.class, () ->
+                userService.adminWithdrawUserByEmail(email)
+        );
+        assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 성공 - 관리자가 이메일로 탈퇴 시 이미 DELETED 상태")
+    void adminWithdrawUserByEmail_Success_AlreadyDeleted() {
+        // Given
+        String email = "test@example.com";
+        User user = new User();
+        user.setEmail(email);
+        user.setStatus(UserStatus.DELETED);
+        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+
+        // When
+        userService.adminWithdrawUserByEmail(email);
+
+        // Then
+        assertThat(user.getStatus()).isEqualTo(UserStatus.DELETED);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 성공 - 이메일과 비밀번호로 탈퇴")
+    void withdrawUserWithPassword_Success() {
+        // Given
+        String email = "test@example.com";
+        String rawPassword = "password123!";
+        String encodedPassword = "encoded_password";
+
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(encodedPassword);
+        user.setStatus(UserStatus.ACTIVE);
+
+        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+        given(passwordEncoder.matches(rawPassword, encodedPassword)).willReturn(true);
+
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(email, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // When
+        userService.withdrawCurrentUserWithPassword(email, rawPassword);
+
+        // Then
+        assertThat(user.getStatus()).isEqualTo(UserStatus.DELETED);
+        verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 실패 - 이메일과 비밀번호로 탈퇴 시 사용자 없음")
+    void withdrawCurrentUserWithPassword_Fail_UserNotFound() {
+        // Given
+        String email = "nonexistent@example.com";
+        String rawPassword = "password123!";
+        given(userRepository.findByEmail(email)).willReturn(Optional.empty());
+
+        String loggedInUserEmail = email;
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(loggedInUserEmail, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // When & Then
+        BusinessException thrown = assertThrows(BusinessException.class, () ->
+                userService.withdrawCurrentUserWithPassword(email, rawPassword)
+        );
+        assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
+        verify(userRepository, never()).save(any(User.class));
+
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 실패 - 이메일과 비밀번호로 탈퇴 시 비밀번호 불일치")
+    void withdrawCurrentUserWithPassword_Fail_InvalidPassword() {
+        // Given
+        String email = "test@example.com";
+        String rawPassword = "wrong_password";
+        String encodedPassword = "encoded_password";
+
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(encodedPassword);
+        user.setStatus(UserStatus.ACTIVE);
+
+        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+        given(passwordEncoder.matches(rawPassword, encodedPassword)).willReturn(false);
+
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(email, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // When & Then
+        BusinessException thrown = assertThrows(BusinessException.class, () ->
+                userService.withdrawCurrentUserWithPassword(email, rawPassword)
+        );
+        assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.INVALID_PASSWORD);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 실패 - 이메일과 비밀번호로 탈퇴 시 이미 DELETED 상태")
+    void withdrawCurrentUserWithPassword_Fail_AlreadyDeleted() {
+        // Given
+        String email = "test@example.com";
+        String rawPassword = "password123!";
+        String encodedPassword = "encoded_password";
+
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(encodedPassword);
+        user.setStatus(UserStatus.DELETED); // 이미 DELETED 상태
+
+        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+        given(passwordEncoder.matches(rawPassword, encodedPassword)).willReturn(true);
+
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(email, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // When & Then
+        BusinessException thrown = assertThrows(BusinessException.class, () ->
+                userService.withdrawCurrentUserWithPassword(email, rawPassword)
+        );
+        assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.USER_ALREADY_DELETED);
+        verify(userRepository, never()).save(any(User.class));
     }
 }

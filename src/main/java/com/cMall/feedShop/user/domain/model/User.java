@@ -92,12 +92,11 @@ public class User extends BaseTimeEntity implements UserDetails {
         return loginId;
     }
 
-    // UserDetails 인터페이스의 다른 메서드 구현 (중요!)
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // 사용자의 역할을 Spring Security의 권한(GrantedAuthority)으로 변환하여 반환합니다.
         // UserRole.USER -> new SimpleGrantedAuthority("USER")
-        return List.of(new SimpleGrantedAuthority(this.role.name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_"+this.role.name()));
     }
 
     @Override
