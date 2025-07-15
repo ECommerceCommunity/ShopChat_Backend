@@ -49,14 +49,6 @@ public class User extends BaseTimeEntity implements UserDetails {
     @Column(unique = true, nullable = false, length = 255)
     private String email;
 
-//    @CreatedDate
-//    @Column(name = "created_at", nullable = false, updatable = false)
-//    private LocalDateTime createdAt;
-//
-//    @LastModifiedDate
-//    @Column(name = "updated_at", nullable = false)
-//    private LocalDateTime updatedAt;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "ENUM('ACTIVE', 'INACTIVE', 'BLOCKED', 'PENDING', 'DELETED') DEFAULT 'ACTIVE'")
     private UserStatus status;
@@ -77,10 +69,7 @@ public class User extends BaseTimeEntity implements UserDetails {
         this.password = password;
         this.email = email;
         this.role = role;
-        this.status = UserStatus.PENDING; // 기본 상태 활성화
-        // @CreatedDate, @LastModifiedDate가 자동 처리하므로 생성자에서 초기화 제거 가능
-        // this.createdAt = LocalDateTime.now();
-        // this.updatedAt = LocalDateTime.now();
+        this.status = UserStatus.PENDING;
         this.passwordChangedAt = LocalDateTime.now(); // 초기 비밀번호 변경 시간 설정
     }
 
@@ -112,7 +101,6 @@ public class User extends BaseTimeEntity implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        // 계정 잠금 여부. UserStatus를 활용하여 BLOCKED 상태일 경우 잠긴 것으로 간주할 수 있습니다.
         return this.status != UserStatus.BLOCKED;
     }
 
@@ -125,7 +113,6 @@ public class User extends BaseTimeEntity implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        // 계정 활성화 여부. UserStatus가 ACTIVE일 때만 활성화된 것으로 간주합니다.
         return this.status == UserStatus.ACTIVE;
     }
 

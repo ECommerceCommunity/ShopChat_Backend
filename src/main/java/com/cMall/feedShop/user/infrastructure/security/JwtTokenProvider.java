@@ -119,3 +119,10 @@ public class JwtTokenProvider {
         return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }
 }
+
+        String email = claims.getSubject();
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+
+        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+    }
+}

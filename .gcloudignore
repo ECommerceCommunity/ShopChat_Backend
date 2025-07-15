@@ -10,7 +10,6 @@ Thumbs.db             # Windows system files
 # Additions for sensitive configuration files
 .env
 application.properties
-application-dev.properties
 application-test.properties
 application.yml
 logs/
@@ -18,7 +17,7 @@ src/main/resources/keystore.p12
 
 # Gradle
 .gradle/
-build/
+!build/
 !gradle/wrapper/gradle-wrapper.jar # Keep gradle wrapper JAR
 
 # Eclipse / Spring Tool Suite (STS)
