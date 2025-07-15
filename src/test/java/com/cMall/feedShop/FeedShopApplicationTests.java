@@ -15,8 +15,6 @@ class FeedShopApplicationTests {
 
     @MockBean
     private JavaMailSender javaMailSender;
-
-
     @Test
     void contextLoads() {
     }
