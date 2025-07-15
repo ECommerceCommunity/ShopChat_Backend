@@ -8,7 +8,6 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import com.cMall.feedShop.event.domain.EventDetail;
 
 @Entity
 @Table(name = "events")

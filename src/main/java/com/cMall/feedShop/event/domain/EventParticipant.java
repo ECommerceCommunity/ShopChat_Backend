@@ -29,9 +29,4 @@ public class EventParticipant {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id")
     private Event event;
-
-    // 향후 유저와 연결할 경우:
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "user_id")
-    // private User user;
 }

@@ -15,8 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.Collections;
+import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +29,7 @@ public class EventService {
         Page<Event> eventPage = eventRepository.findAll(pageable);
         List<EventSummaryDto> content = eventPage.getContent().stream()
                 .map(this::toSummaryDto)
-                .collect(Collectors.toList());
+                .toList();
         return EventListResponseDto.builder()
                 .content(content)
                 .page(pageable.getPageNumber() + 1)
@@ -47,7 +47,7 @@ public class EventService {
         Page<Event> eventPage = eventRepository.searchEvents(requestDto, pageable);
         List<EventSummaryDto> content = eventPage.getContent().stream()
                 .map(this::toSummaryDto)
-                .collect(Collectors.toList());
+                .toList();
         return EventListResponseDto.builder()
                 .content(content)
                 .page(page + 1)
@@ -60,42 +60,74 @@ public class EventService {
     // Entity → DTO 변환 (간단 버전)
     private EventSummaryDto toSummaryDto(Event event) {
         EventDetail detail = event.getEventDetail();
-        // 등수별 보상 매핑
-        List<EventSummaryDto.Reward> rewards = event.getRewards() != null ? event.getRewards().stream()
+        
+        return EventSummaryDto.builder()
+                .eventId(event.getId())
+                .title(getSafeString(detail, EventDetail::getTitle))
+                .type(getEventType(event))
+                .status(getEventStatus(event))
+                .eventStartDate(getSafeLocalDateString(detail, EventDetail::getEventStartDate))
+                .eventEndDate(getSafeLocalDateString(detail, EventDetail::getEventEndDate))
+                .imageUrl(getSafeString(detail, EventDetail::getImageUrl))
+                .maxParticipants(event.getMaxParticipants())
+                .description(getSafeString(detail, EventDetail::getDescription))
+                .rewards(mapRewards(event))
+                .participationMethod(getSafeString(detail, EventDetail::getParticipationMethod))
+                .selectionCriteria(getSafeString(detail, EventDetail::getSelectionCriteria))
+                .precautions(getSafeString(detail, EventDetail::getPrecautions))
+                .createdBy("")
+                .createdAt(event.getCreatedBy() != null ? event.getCreatedBy().toString() : null)
+                .purchasePeriod(createPurchasePeriod(detail))
+                .votePeriod(createVotePeriod(detail))
+                .announcementDate(getSafeLocalDateString(detail, EventDetail::getAnnouncement))
+                .build();
+    }
+
+    private List<EventSummaryDto.Reward> mapRewards(Event event) {
+        return event.getRewards() != null ? event.getRewards().stream()
                 .map(r -> EventSummaryDto.Reward.builder()
                         .rank(r.getConditionValue())
                         .reward(r.getRewardValue())
                         .build())
-                .collect(Collectors.toList()) : Collections.emptyList();
-        // purchasePeriod, votePeriod, announcementDate 가공
-        String purchasePeriod = (detail != null && detail.getPurchaseStartDate() != null && detail.getPurchaseEndDate() != null)
-                ? detail.getPurchaseStartDate() + " ~ " + detail.getPurchaseEndDate()
+                .toList() : Collections.emptyList();
+    }
+
+    private String createPurchasePeriod(EventDetail detail) {
+        return createDateRangeString(detail, EventDetail::getPurchaseStartDate, EventDetail::getPurchaseEndDate);
+    }
+
+    private String createVotePeriod(EventDetail detail) {
+        return createDateRangeString(detail, EventDetail::getEventStartDate, EventDetail::getEventEndDate);
+    }
+
+    private String createDateRangeString(EventDetail detail, 
+                                       Function<EventDetail, java.time.LocalDate> startGetter,
+                                       Function<EventDetail, java.time.LocalDate> endGetter) {
+        if (detail == null) return "";
+        
+        var startDate = startGetter.apply(detail);
+        var endDate = endGetter.apply(detail);
+        
+        return (startDate != null && endDate != null) 
+                ? startDate + " ~ " + endDate 
                 : "";
-        String votePeriod = (detail != null && detail.getEventStartDate() != null && detail.getEventEndDate() != null)
-                ? detail.getEventStartDate() + " ~ " + detail.getEventEndDate()
-                : "";
-        String announcementDate = (detail != null && detail.getAnnouncement() != null)
-                ? detail.getAnnouncement().toString()
-                : "";
-        return EventSummaryDto.builder()
-                .eventId(event.getId()) // 프론트 id 매핑
-                .title(detail != null ? detail.getTitle() : "")
-                .type(event.getType() != null ? event.getType().name().toLowerCase() : null)
-                .status(event.getStatus() != null ? event.getStatus().name().toLowerCase() : null)
-                .eventStartDate(detail != null && detail.getEventStartDate() != null ? detail.getEventStartDate().toString() : "")
-                .eventEndDate(detail != null && detail.getEventEndDate() != null ? detail.getEventEndDate().toString() : "")
-                .imageUrl(detail != null ? detail.getImageUrl() : "")
-                .maxParticipants(event.getMaxParticipants()) // 프론트 participantCount 매핑
-                .description(detail != null ? detail.getDescription() : "")
-                .rewards(rewards)
-                .participationMethod(detail != null ? detail.getParticipationMethod() : "")
-                .selectionCriteria(detail != null ? detail.getSelectionCriteria() : "")
-                .precautions(detail != null ? detail.getPrecautions() : "")
-                .createdBy("")
-                .createdAt(event.getCreatedBy() != null ? event.getCreatedBy().toString() : null)
-                .purchasePeriod(purchasePeriod)
-                .votePeriod(votePeriod)
-                .announcementDate(announcementDate)
-                .build();
+    }
+
+    private String getSafeString(EventDetail detail, Function<EventDetail, String> getter) {
+        return detail != null ? getter.apply(detail) : "";
+    }
+
+    private String getSafeLocalDateString(EventDetail detail, Function<EventDetail, java.time.LocalDate> getter) {
+        if (detail == null) return "";
+        var date = getter.apply(detail);
+        return date != null ? date.toString() : "";
+    }
+
+    private String getEventType(Event event) {
+        return event.getType() != null ? event.getType().name().toLowerCase() : null;
+    }
+
+    private String getEventStatus(Event event) {
+        return event.getStatus() != null ? event.getStatus().name().toLowerCase() : null;
     }
 } 

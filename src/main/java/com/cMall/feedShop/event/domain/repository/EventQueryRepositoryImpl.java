@@ -4,10 +4,8 @@ import com.cMall.feedShop.event.application.dto.request.EventListRequestDto;
 import com.cMall.feedShop.event.application.dto.response.EventSummaryDto;
 import com.cMall.feedShop.event.domain.Event;
 import com.cMall.feedShop.event.domain.EventDetail;
-import com.cMall.feedShop.event.domain.EventReward;
 import com.cMall.feedShop.event.domain.QEvent;
 import com.cMall.feedShop.event.domain.QEventDetail;
-import com.cMall.feedShop.event.domain.QEventReward;
 import com.cMall.feedShop.event.domain.enums.EventStatus;
 import com.cMall.feedShop.event.domain.enums.EventType;
 import com.querydsl.core.BooleanBuilder;
@@ -34,7 +32,6 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
     public Page<Event> searchEvents(EventListRequestDto requestDto, Pageable pageable) {
         QEvent event = QEvent.event;
         QEventDetail detail = QEventDetail.eventDetail;
-        QEventReward reward = QEventReward.eventReward;
 
         BooleanBuilder builder = new BooleanBuilder();
         if (StringUtils.hasText(requestDto.getStatus()) && !"all".equalsIgnoreCase(requestDto.getStatus())) {
