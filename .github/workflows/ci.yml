@@ -63,4 +63,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
-

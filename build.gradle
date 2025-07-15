@@ -83,7 +83,6 @@ jacocoTestReport {
 	// html.outputLocation = file("${buildDir}/reports/jacoco/html") // HTML 리포트 출력 경로 (선택 사항)
 }
 
-
 sonar {
 	properties {
 		property "sonar.projectKey", "ECommerceCommunity_FeedShop_Backend"
