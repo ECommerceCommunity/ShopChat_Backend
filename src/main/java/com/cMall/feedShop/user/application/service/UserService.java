@@ -143,40 +143,25 @@ public class UserService {
         return userRepository.existsByEmail(email); // User Repository 사용
     }
 
-    /**
-     * 이메일 인증 토큰을 검증하고 사용자 계정을 활성화합니다.
-     * @param token 사용자가 이메일 링크를 통해 전달한 인증 토큰
-     * @throws RuntimeException 토큰이 유효하지 않거나 만료되었을 경우 등
-     */
     @Transactional
     public void verifyEmail(String token) {
         User user = userRepository.findByVerificationToken(token)
-                .orElseThrow(() -> new RuntimeException("유효하지 않거나 찾을 수 없는 인증 토큰입니다."));
+                .orElseThrow(() -> new UserException(INVALID_VERIFICATION_TOKEN));
 
         if (user.getStatus() == UserStatus.ACTIVE) {
+            throw new UserException(ACCOUNT_ALREADY_VERIFIED);
+        }
+
+        if (user.getVerificationTokenExpiry().isBefore(LocalDateTime.now())) {
             user.setVerificationToken(null);
             user.setVerificationTokenExpiry(null);
             userRepository.save(user);
-            throw new RuntimeException("이미 인증이 완료된 계정입니다.");
-        }
-
-        if (user.getVerificationToken() == null || !user.getVerificationToken().equals(token)) {
-            throw new RuntimeException("인증 토큰이 유효하지 않습니다.");
-        }
-
-        if (user.getVerificationTokenExpiry() == null || user.getVerificationTokenExpiry().isBefore(LocalDateTime.now())) {
-
-            user.setVerificationToken(null);
-            user.setVerificationTokenExpiry(null);
-            userRepository.save(user); // 변경사항 저장
-            throw new RuntimeException("인증 토큰이 만료되었습니다. 다시 회원가입을 시도하거나 인증 메일을 재발송해주세요.");
+            throw new UserException(VERIFICATION_TOKEN_EXPIRED);
         }
 
         user.setStatus(UserStatus.ACTIVE);
-
         user.setVerificationToken(null);
         user.setVerificationTokenExpiry(null);
-
         userRepository.save(user);
     }
 
