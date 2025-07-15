@@ -21,6 +21,8 @@ public enum ErrorCode {
     DUPLICATE_EMAIL(409, "U002", "이미 존재하는 이메일입니다."),
     INVALID_PASSWORD(400, "U003", "비밀번호가 일치하지 않습니다."),
     USER_ALREADY_DELETED(409, "U004", "이미 탈퇴 처리된 계정입니다."),
+    INVALID_VERIFICATION_TOKEN(400, "U005", "유효하지 않거나 찾을 수 없는 인증 토큰입니다."),
+
 
     // 스토어
     STORE_FORBIDDEN(403, "S001", "해당 스토어의 관리자가 아닙니다."),

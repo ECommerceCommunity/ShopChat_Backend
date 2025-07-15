@@ -5,6 +5,7 @@ import com.cMall.feedShop.common.exception.ErrorCode;
 import com.cMall.feedShop.common.service.EmailService;
 import com.cMall.feedShop.user.application.dto.request.UserSignUpRequest;
 import com.cMall.feedShop.user.application.dto.response.UserResponse;
+import com.cMall.feedShop.user.domain.exception.UserException;
 import com.cMall.feedShop.user.domain.model.User;
 import com.cMall.feedShop.user.domain.enums.UserRole;
 import com.cMall.feedShop.user.domain.enums.UserStatus;
@@ -22,8 +23,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.cMall.feedShop.common.exception.ErrorCode.INVALID_PASSWORD;
-import static com.cMall.feedShop.common.exception.ErrorCode.USER_NOT_FOUND;
+import static com.cMall.feedShop.common.exception.ErrorCode.*;
 
 @Service
 @Transactional
@@ -184,8 +184,7 @@ public class UserService {
     @Transactional
     public void withdrawUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND,"사용자를 찾을 수 없습니다. ID: " + userId));
-
+                .orElseThrow(() -> new UserException(INVALID_VERIFICATION_TOKEN));
         if (user.getStatus() == UserStatus.DELETED) {
             return;
         }
