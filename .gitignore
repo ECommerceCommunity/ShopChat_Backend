@@ -10,10 +10,12 @@ Thumbs.db             # Windows system files
 # Additions for sensitive configuration files
 .env
 application.properties
+application-dev.properties
 application-test.properties
 application.yml
 logs/
 src/main/resources/keystore.p12
+src/test/resources/application-test.properties
 
 # Gradle
 .gradle/
@@ -50,3 +52,4 @@ out/
 
 # Keystore files
 keystore.p12
+src/main/resources/application-dev.properties
