@@ -21,9 +21,9 @@ public enum ErrorCode {
     DUPLICATE_EMAIL(409, "U002", "이미 존재하는 이메일입니다."),
     INVALID_PASSWORD(400, "U003", "비밀번호가 일치하지 않습니다."),
     USER_ALREADY_DELETED(409, "U004", "이미 탈퇴 처리된 계정입니다."),
-    INVALID_VERIFICATION_TOKEN(400, "U005", "유효하지 않은 인증 토큰입니다."),
-    VERIFICATION_TOKEN_EXPIRED(400, "U006", "인증 토큰이 만료되었습니다."),
-    ACCOUNT_ALREADY_VERIFIED(409, "U007", "이미 인증된 계정입니다."),
+    INVALID_VERIFICATION_TOKEN(400, "U005", "유효하지 않거나 찾을 수 없는 인증 토큰입니다."),
+    ACCOUNT_ALREADY_VERIFIED(409, "U006", "이미 인증이 완료된 계정입니다."),
+    VERIFICATION_TOKEN_EXPIRED(400, "U007", "인증 토큰이 만료되었습니다. 다시 회원가입을 시도하거나 인증 메일을 재발송해주세요."),
 
     // 스토어
     STORE_FORBIDDEN(403, "S001", "해당 스토어의 관리자가 아닙니다."),
@@ -38,9 +38,6 @@ public enum ErrorCode {
     // 주문
     ORDER_NOT_FOUND(404, "O001", "주문을 찾을 수 없습니다."),
     INVALID_ORDER_STATUS(400, "O002", "잘못된 주문 상태입니다.");
-
-
-
 
     private final int status;
     private final String code;

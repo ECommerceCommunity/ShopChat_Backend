@@ -13,7 +13,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
@@ -94,18 +93,30 @@ public class JwtTokenProvider {
                 .getSubject();
     }
 
-    // JWT 토큰으로부터 인증 객체를 생성
     public Authentication getAuthentication(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-
         String email = claims.getSubject();
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
 
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        // JWT에 role이 있으면 사용, 없으면 UserDetails에서 가져오기
+        String role = claims.get("role", String.class);
+        Collection<? extends GrantedAuthority> authorities;
+
+        if (role != null) {
+            // 단일 role을 authority로 변환
+            authorities = Arrays.asList(new SimpleGrantedAuthority("ROLE_" + role));
+        } else {
+            // UserDetails에서 authorities 가져오기
+            authorities = userDetails.getAuthorities();
+        }
+
+        log.debug("Authenticated user: {}", userDetails.getUsername());
+        log.debug("Authorities from JWT/UserDetails: {}", authorities);
+        return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }
 }
 

@@ -1,3 +1,4 @@
+
 package com.cMall.feedShop.config;
 
 import com.cMall.feedShop.user.infrastructure.security.JwtAuthenticationFilter;
@@ -16,12 +17,12 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint; // <-- 추가
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.http.HttpStatus; // <-- 추가
+import org.springframework.http.HttpStatus;
 
 import java.util.Arrays;
 import java.util.List;
@@ -61,7 +62,7 @@ public class SecurityConfig {
                       "/api/products", // 현재 브랜치에 있던 내용
                       "/api/products/**" // 현재 브랜치에 있던 내용
                     ).permitAll()
-                    .requestMatchers("/api/users/admin/**").hasRole("ADMIN") 
+                    .requestMatchers("/api/users/admin/**").hasRole("ADMIN")
                     .requestMatchers("/api/seller/**").hasRole("SELLER")
                     .anyRequest().authenticated()
                 )
@@ -87,6 +88,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-
-    
 }
