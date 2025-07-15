@@ -1,18 +1,16 @@
 package com.cMall.feedShop.user.application.service;
 
-import com.cMall.feedShop.common.exception.BusinessException; // 필요한 경우 유지, UserException으로 통일했으므로 제거 고려
-import com.cMall.feedShop.common.exception.ErrorCode;
 import com.cMall.feedShop.common.service.EmailService;
 import com.cMall.feedShop.user.application.dto.request.UserSignUpRequest;
 import com.cMall.feedShop.user.application.dto.response.UserResponse;
 import com.cMall.feedShop.user.domain.enums.UserRole;
 import com.cMall.feedShop.user.domain.enums.UserStatus;
-import com.cMall.feedShop.user.domain.exception.UserException; // 충돌 해결: UserException 추가
+import com.cMall.feedShop.user.domain.exception.UserException;
 import com.cMall.feedShop.user.domain.model.User;
 import com.cMall.feedShop.user.domain.model.UserProfile;
 import com.cMall.feedShop.user.domain.repository.UserProfileRepository;
 import com.cMall.feedShop.user.domain.repository.UserRepository;
-import org.junit.jupiter.api.AfterEach; // develop 브랜치 추가: SecurityContextHolder 초기화용
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

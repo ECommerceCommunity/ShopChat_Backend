@@ -52,6 +52,7 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
+	implementation 'com.google.cloud.sql:mysql-socket-factory-connector-j-8:1.15.0'
 }
 
 tasks.named('test') {
@@ -82,7 +83,7 @@ jacocoTestReport {
 	// html.outputLocation = file("${buildDir}/reports/jacoco/html") // HTML 리포트 출력 경로 (선택 사항)
 }
 
-// SonarCloud 설정 추가
+
 sonar {
 	properties {
 		property "sonar.projectKey", "ECommerceCommunity_FeedShop_Backend"

@@ -1,3 +1,4 @@
+
 package com.cMall.feedShop.config;
 
 import com.cMall.feedShop.user.infrastructure.security.JwtAuthenticationFilter;
@@ -87,6 +88,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-
-    
 }

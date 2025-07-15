@@ -242,3 +242,4 @@ public class UserService {
         deleteUser(user); // 공통 삭제 로직 호출
     }
 }
+

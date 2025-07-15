@@ -119,3 +119,4 @@ public class JwtTokenProvider {
         return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }
 }
+
