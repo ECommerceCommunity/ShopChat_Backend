@@ -6,6 +6,11 @@ plugins {
 	id 'jacoco'
 }
 
+// JAR 빌드 시 application-test.properties 파일을 제외하도록 설정
+jar {
+	exclude '**/application-test.properties'
+}
+
 group = 'com.cMall'
 version = '0.0.1-SNAPSHOT'
 
@@ -53,6 +58,12 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
 	implementation 'com.google.cloud.sql:mysql-socket-factory-connector-j-8:1.15.0'
+
+    // QueryDSL 의존성 최신화 (취약점 패치)
+    implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
+    annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta'
+    annotationProcessor 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api:3.1.0'
 }
 
 tasks.named('test') {
@@ -71,6 +82,30 @@ jacoco {
 	toolVersion = "0.8.11" // 최신 Jacoco 버전 확인 후 적용
 }
 
+// QueryDSL Q클래스 생성 위치 설정 (Gradle 8.x 권장 방식)
+def querydslDir = layout.buildDirectory.dir("generated/querydsl")
+
+sourceSets {
+	main {
+		java {
+			srcDirs += [querydslDir.get().asFile]
+		}
+	}
+}
+
+// Gradle 8.x 이상에서는 annotationProcessorGeneratedSourcesDirectory 옵션 제거
+// tasks.withType(JavaCompile).configureEach {
+// 	options.annotationProcessorGeneratedSourcesDirectory = querydslDir.get().asFile
+// }
+
+tasks.register('cleanQuerydsl', Delete) {
+	delete querydslDir
+}
+
+clean {
+	delete querydslDir
+}
+
 jacocoTestReport {
 	dependsOn test // jacocoTestReport 태스크가 test 태스크 실행 이후에 실행되도록 의존성 설정
 	reports {
@@ -82,7 +117,6 @@ jacocoTestReport {
 	// destinationFile = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml") // 기본 경로와 동일하면 명시하지 않아도 됨
 	// html.outputLocation = file("${buildDir}/reports/jacoco/html") // HTML 리포트 출력 경로 (선택 사항)
 }
-
 
 sonar {
 	properties {

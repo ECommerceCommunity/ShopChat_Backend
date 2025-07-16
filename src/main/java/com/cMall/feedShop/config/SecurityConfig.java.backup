@@ -1,8 +1,6 @@
 package com.cMall.feedShop.config;
 
-import com.cMall.feedShop.user.infrastructure.security.JwtAuthenticationFilter;
 import com.cMall.feedShop.user.infrastructure.service.CustomUserDetailsService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -47,7 +45,6 @@ public class SecurityConfig {
                         // React는 이 401 응답을 받아서 자체적으로 로그인 페이지로 리다이렉트하거나 메시지를 표시합니다.
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
-
                 .authorizeHttpRequests(auth -> auth
                     .requestMatchers(
                       "/api/auth/login",
@@ -57,8 +54,9 @@ public class SecurityConfig {
                       "/swagger-ui/**",
                       "/v3/api-docs/**",
                       "/swagger-resources/**",
-                      "/api/products",
-                      "/api/products/**", "/api/events", "/api/events/**"
+                      "/api/products", // 현재 브랜치에 있던 내용
+                      "/api/products/**", // 현재 브랜치에 있던 내용
+                            "/api/events", "/api/events/**"
                     ).permitAll()
                     .requestMatchers("/api/users/admin/**").hasRole("ADMIN")
                     .requestMatchers("/api/seller/**").hasRole("SELLER")
@@ -86,4 +84,6 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
+
 }
