@@ -54,11 +54,23 @@ dependencies {
 
 	implementation 'com.google.cloud.sql:mysql-socket-factory-connector-j-8:1.15.0'
 
-	// QueryDSL 의존성 최신화 (취약점 패치)
-	implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
-	annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta'
-	annotationProcessor 'jakarta.annotation:jakarta.annotation-api:2.1.1'
-	annotationProcessor 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+    // QueryDSL 의존성 최신화 (취약점 패치)
+    implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
+    annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta'
+    annotationProcessor 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+
+	testLogging {
+		events "passed", "skipped", "failed", "standardOut", "standardError"
+		showExceptions true
+		exceptionFormat "full" // 스택 트레이스를 전체 출력
+		showStandardStreams true // System.out, System.err로 출력되는 내용도 포함
+	}
 }
 
 jacoco {
@@ -117,16 +129,5 @@ sonar {
 		// 분석에서 제외할 파일이나 디렉토리를 지정할 수 있습니다. (선택 사항)
 		// property "sonar.exclusions", "**/generated/**, **/*.html"
 		// property "sonar.test.exclusions", "**/*Test.java" // 테스트 파일 제외 예시
-	}
-}
-
-tasks.named('test') {
-	useJUnitPlatform()
-	finalizedBy jacocoTestReport
-	testLogging {
-		events "passed", "skipped", "failed", "standardOut", "standardError"
-		showExceptions true
-		exceptionFormat "full" // 스택 트레이스를 전체 출력
-		showStandardStreams true // System.out, System.err로 출력되는 내용도 포함
 	}
 }
