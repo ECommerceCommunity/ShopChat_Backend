@@ -52,6 +52,8 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
+	implementation 'com.google.cloud.sql:mysql-socket-factory-connector-j-8:1.15.0'
+
 	// QueryDSL 의존성 최신화 (취약점 패치)
 	implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
 	annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta'
@@ -101,7 +103,7 @@ jacocoTestReport {
 	// destinationFile = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml") // 기본 경로와 동일하면 명시하지 않아도 됨
 	// html.outputLocation = file("${buildDir}/reports/jacoco/html") // HTML 리포트 출력 경로 (선택 사항)
 }
-// SonarCloud 설정 추가
+
 // SonarCloud 설정 추가
 sonar {
 	properties {
