@@ -7,10 +7,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 @ActiveProfiles("test")
 @SpringBootTest
 @EnableAutoConfiguration(exclude = {MailSenderAutoConfiguration.class})
+@TestPropertySource(properties = {
+        "jwt.secret=your-test-jwt-secret-key-that-is-long-enough-for-testing-purposes-1234567890" // 32자 이상 권장
+})
 class FeedShopApplicationTests {
 
     @MockBean
