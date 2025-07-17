@@ -13,8 +13,7 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest
 @EnableAutoConfiguration(exclude = {MailSenderAutoConfiguration.class})
 @TestPropertySource(properties = {
-        "jwt.secret=your-test-jwt-secret-key-that-is-long-enough-for-testing-purposes-1234567890" // 32자 이상 권장
-})
+        "jwt.secret=${TEST_JWT_SECRET:default-test-secret-key-1234567890abcdef}"})
 class FeedShopApplicationTests {
 
     @MockBean
