@@ -37,8 +37,18 @@ public enum ErrorCode {
 
     // 주문
     ORDER_NOT_FOUND(404, "O001", "주문을 찾을 수 없습니다."),
-    INVALID_ORDER_STATUS(400, "O002", "잘못된 주문 상태입니다.");
+    INVALID_ORDER_STATUS(400, "O002", "잘못된 주문 상태입니다."),
 
+    // 리뷰 관련
+    REVIEW_NOT_FOUND(404, "R001", "존재하지 않는 리뷰입니다."),
+    REVIEW_ALREADY_EXISTS(409, "R002", "이미 해당 상품에 대한 리뷰가 존재합니다."),
+    REVIEW_ACCESS_DENIED(403, "R003", "리뷰에 대한 권한이 없습니다."),
+    INVALID_RATING(400, "R004", "평점은 1-5 사이의 값이어야 합니다."),
+    REVIEW_CONTENT_TOO_LONG(400, "R005", "리뷰 내용은 1000자를 초과할 수 없습니다."),
+    REVIEW_TITLE_REQUIRED(400, "R006", "리뷰 제목은 필수입니다."),
+    REVIEW_TITLE_TOO_LONG(400, "R007", "리뷰 제목은 100자 이하여야 합니다.");
+
+    
     private final int status;
     private final String code;
     private final String message;
