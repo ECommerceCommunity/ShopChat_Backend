@@ -62,7 +62,7 @@ jobs:
 
       - name: Analyze with SonarQube
         run: |
-          ./gradlew sonar
+          ./gradlew sonar --debug --stacktrace
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
