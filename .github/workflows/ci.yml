@@ -24,6 +24,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Clean Gradle Build Cache
+        run: ./gradlew --build-cache clean
+
       - name: Clean build directory
         run: ./gradlew clean
 
@@ -50,7 +53,7 @@ jobs:
           name: test-results
           path: build/test-results/test/*.xml
 
-      - name: Upload Test Coverage
+      - name: Upload Test Coverage # 테스트 커버리지 보고서 아티팩트를 업로드합니다.
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -58,9 +61,8 @@ jobs:
           path: build/reports/jacoco/test/jacocoTestReport.xml
 
       - name: Analyze with SonarQube
-        if: github.event_name == 'pull_request' || github.event_name == 'push'
         run: |
-          ./gradlew sonar --debug
+          ./gradlew sonar
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
