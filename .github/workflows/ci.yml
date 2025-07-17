@@ -62,7 +62,7 @@ jobs:
 
       - name: Analyze with SonarQube
         run: |
-          ./gradlew sonar
+          ./gradlew sonar -Dsonar.branch.name=${{ github.ref_name }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
