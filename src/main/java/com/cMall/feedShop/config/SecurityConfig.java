@@ -60,7 +60,8 @@ public class SecurityConfig {
                       "/swagger-resources/**",
                       "/api/products", // 현재 브랜치에 있던 내용
                       "/api/products/**", // 현재 브랜치에 있던 내용
-                            "/api/events", "/api/events/**"
+                            "/api/events", "/api/events/**",
+                            "/api/reviews/products/**","/api/reviews/{reviewId}"
                     ).permitAll()
                     .requestMatchers("/api/users/admin/**").hasRole("ADMIN")
                     .requestMatchers("/api/seller/**").hasRole("SELLER")

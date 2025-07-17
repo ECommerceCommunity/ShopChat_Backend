@@ -3,44 +3,32 @@ package com.cMall.feedShop.review.application.exception;
 import com.cMall.feedShop.common.exception.BusinessException;
 import com.cMall.feedShop.common.exception.ErrorCode;
 
-public class ReviewException extends BusinessException {
-    
-    public ReviewException(ErrorCode errorCode) {
-        super(errorCode);
-    }
-    
-    public ReviewException(ErrorCode errorCode, String message) {
-        super(errorCode, message);
-    }
-    
-    // 미리 정의된 예외들 (ErrorCode 기반)
-    public static class ReviewNotFoundException extends ReviewException {
+public class ReviewException {
+
+    public static class ReviewNotFoundException extends BusinessException {
         public ReviewNotFoundException() {
-            super(ErrorCode.REVIEW_NOT_FOUND);
+            super(ErrorCode.valueOf("REVIEW_NOT_FOUND"), "리뷰를 찾을 수 없습니다.");
+        }
+
+        public ReviewNotFoundException(String message) {
+            super(ErrorCode.valueOf("REVIEW_NOT_FOUND"), message);
         }
     }
-    
-    public static class ReviewAlreadyExistsException extends ReviewException {
-        public ReviewAlreadyExistsException() {
-            super(ErrorCode.REVIEW_ALREADY_EXISTS);
+
+    public static class DuplicateReviewException extends BusinessException {
+        public DuplicateReviewException() {
+            super(ErrorCode.valueOf("DUPLICATE_REVIEW"), "이미 해당 상품에 대한 리뷰를 작성하셨습니다.");
         }
     }
-    
-    public static class ReviewAccessDeniedException extends ReviewException {
+
+    public static class InvalidReviewDataException extends BusinessException {
+        public InvalidReviewDataException(String message) {
+            super(ErrorCode.INVALID_INPUT_VALUE, message);
+        }
+    }
+    public static class ReviewAccessDeniedException extends BusinessException {
         public ReviewAccessDeniedException() {
-            super(ErrorCode.REVIEW_ACCESS_DENIED);
-        }
-    }
-    
-    public static class InvalidRatingException extends ReviewException {
-        public InvalidRatingException() {
-            super(ErrorCode.INVALID_RATING);
-        }
-    }
-    
-    public static class ReviewContentTooLongException extends ReviewException {
-        public ReviewContentTooLongException() {
-            super(ErrorCode.REVIEW_CONTENT_TOO_LONG);
+            super(ErrorCode.FORBIDDEN, "리뷰에 대한 권한이 없습니다.");
         }
     }
 }

@@ -1,243 +1,232 @@
 package com.cMall.feedShop.review.application.service;
 
-import com.cMall.feedShop.review.application.ReviewService;
-import com.cMall.feedShop.review.domain.entity.Review;
-import com.cMall.feedShop.review.domain.entity.ReviewStatus;
-import com.cMall.feedShop.review.domain.entity.SizeFit;
-import com.cMall.feedShop.review.domain.entity.Cushion;
-import com.cMall.feedShop.review.domain.entity.Stability;
-import com.cMall.feedShop.review.domain.repository.ReviewRepository;
-import com.cMall.feedShop.review.domain.repository.ReviewImageRepository; // 추가
+import com.cMall.feedShop.common.exception.BusinessException;
 import com.cMall.feedShop.review.application.dto.request.ReviewCreateRequest;
-import com.cMall.feedShop.review.application.dto.request.ReviewUpdateRequest;
 import com.cMall.feedShop.review.application.dto.response.ReviewCreateResponse;
-import com.cMall.feedShop.review.application.dto.response.ReviewDetailResponse;
+import com.cMall.feedShop.review.application.dto.response.ReviewListResponse;
+import com.cMall.feedShop.review.application.dto.response.ReviewResponse;
 import com.cMall.feedShop.review.application.exception.ReviewException;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
+import com.cMall.feedShop.review.domain.Review;
+import com.cMall.feedShop.review.domain.enums.Cushion;
+import com.cMall.feedShop.review.domain.enums.SizeFit;
+import com.cMall.feedShop.review.domain.enums.Stability;
+import com.cMall.feedShop.review.domain.repository.ReviewRepository;
+import com.cMall.feedShop.user.domain.enums.UserRole;
+import com.cMall.feedShop.user.domain.model.User;
+import com.cMall.feedShop.user.domain.model.UserProfile;
+import com.cMall.feedShop.user.domain.repository.UserRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
-import java.util.Optional;
-import java.util.List;
-import java.util.ArrayList;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.*;
+
+@ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
-public class ReviewServiceTest {
+@DisplayName("ReviewService 테스트")
+class ReviewServiceTest {
 
     @Mock
     private ReviewRepository reviewRepository;
 
     @Mock
-    private ReviewImageRepository reviewImageRepository; // Mock 추가
+    private UserRepository userRepository;
+
+    @Mock
+    private SecurityContext securityContext;
+
+    @Mock
+    private Authentication authentication;
 
     @InjectMocks
     private ReviewService reviewService;
 
+    private User testUser;
+    private UserProfile testUserProfile;
+    private Review testReview;
     private ReviewCreateRequest createRequest;
-    private Review review;
 
     @BeforeEach
     void setUp() {
-        createRequest = ReviewCreateRequest.builder()
-                .content("정말 편한 신발입니다. 하루 종일 신고 다녀도 발이 전혀 아프지 않아요")
+        testUser = new User("testLogin", "password", "test@test.com", UserRole.USER);
+        ReflectionTestUtils.setField(testUser, "id", 1L);
+
+        testUserProfile = new UserProfile(testUser, "테스트사용자", "테스트닉네임", "010-1234-5678");
+        testUser.setUserProfile(testUserProfile);
+
+        testReview = Review.builder()
+                .title("좋은 신발입니다")
                 .rating(5)
-                .userId(1L)
+                .sizeFit(SizeFit.NORMAL)
+                .cushion(Cushion.SOFT)
+                .stability(Stability.STABLE)
+                .content("정말 편하고 좋습니다. 추천해요!")
+                .user(testUser)
                 .productId(1L)
-                .sizeFit(SizeFit.PERFECT)      // 딱 맞음
-                .cushioning(Cushion.VERY_SOFT) // 매우 부드러움
-                .stability(Stability.VERY_STABLE) // 매우 안정적
                 .build();
+        ReflectionTestUtils.setField(testReview, "reviewId", 1L);
+        ReflectionTestUtils.setField(testReview, "createdAt", LocalDateTime.now());
+        ReflectionTestUtils.setField(testReview, "updatedAt", LocalDateTime.now());
 
-        review = Review.builder()
-                .reviewId(1L)
-                .content("정말 편한 신발입니다. 하루 종일 신고 다녀도 발이 전혀 아프지 않아요")
-                .rating(5)
-                .userId(1L)
-                .productId(1L)
-                .sizeFit(SizeFit.PERFECT)
-                .cushioning(Cushion.VERY_SOFT)
-                .stability(Stability.VERY_STABLE)
-                .status(ReviewStatus.ACTIVE)
-                .build();
+        createRequest = new ReviewCreateRequest();
+        createRequest.setTitle("좋은 신발입니다");
+        createRequest.setRating(5);
+        createRequest.setSizeFit(SizeFit.NORMAL);
+        createRequest.setCushion(Cushion.SOFT);
+        createRequest.setStability(Stability.STABLE);
+        createRequest.setContent("정말 편하고 좋습니다. 추천해요!");
+        createRequest.setProductId(1L);
     }
 
-    // RE-01: 신발 리뷰 작성 기능 테스트 (5단계 평가)
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
     @Test
-    @DisplayName("Given 5-level shoe characteristics_When create review_Then return detailed response")
-    void given5LevelShoeCharacteristics_whenCreateReview_thenReturnDetailedResponse() {
+    @DisplayName("리뷰를 성공적으로 생성할 수 있다")
+    void createReviewSuccessfully() {
         // given
-        when(reviewRepository.existsByUserIdAndProductIdAndStatusActive(1L, 1L)).thenReturn(false);
-        when(reviewRepository.save(any(Review.class))).thenReturn(review);
+        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
+            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
+            mockSecurityContext();
+            given(userRepository.findByEmail("test@test.com")).willReturn(Optional.of(testUser));
+            given(reviewRepository.save(any(Review.class))).willReturn(testReview);
 
-        // when
-        ReviewCreateResponse response = reviewService.createReview(createRequest);
+            // when
+            ReviewCreateResponse response = reviewService.createReview(createRequest);
 
-        // then
-        assertNotNull(response);
-        assertEquals(1L, response.getReviewId());
-        assertEquals(SizeFit.PERFECT, response.getSizeFit());
-        assertEquals(Cushion.VERY_SOFT, response.getCushioning());
-        assertEquals(Stability.VERY_STABLE, response.getStability());
-        verify(reviewRepository, times(1)).save(any(Review.class));
+            // then
+            assertThat(response.getReviewId()).isEqualTo(1L);
+            assertThat(response.getMessage()).isEqualTo("리뷰가 성공적으로 작성되었습니다.");
+            verify(reviewRepository, times(1)).save(any(Review.class));
+        }
     }
 
     @Test
-    @DisplayName("Given extreme negative characteristics_When create review_Then handle all extreme values")
-    void givenExtremeNegativeCharacteristics_whenCreateReview_thenHandleAllExtremeValues() {
-        // given - 최악의 신발 리뷰
-        ReviewCreateRequest extremeRequest = ReviewCreateRequest.builder()
-                .content("정말 최악의 신발입니다. 사이즈도 안 맞고 쿠션도 없고 발목도 불안정해요")
-                .rating(1)
-                .userId(1L)
-                .productId(2L)
-                .sizeFit(SizeFit.VERY_SMALL)      // 매우 작음
-                .cushioning(Cushion.VERY_FIRM)    // 매우 단단함
-                .stability(Stability.VERY_UNSTABLE) // 매우 불안정
-                .build();
-
-        Review extremeReview = Review.builder()
-                .reviewId(2L)
-                .content(extremeRequest.getContent())
-                .rating(1)
-                .userId(1L)
-                .productId(2L)
-                .sizeFit(SizeFit.VERY_SMALL)
-                .cushioning(Cushion.VERY_FIRM)
-                .stability(Stability.VERY_UNSTABLE)
-                .status(ReviewStatus.ACTIVE)
-                .build();
-
-        when(reviewRepository.existsByUserIdAndProductIdAndStatusActive(1L, 2L)).thenReturn(false);
-        when(reviewRepository.save(any(Review.class))).thenReturn(extremeReview);
-
-        // when
-        ReviewCreateResponse response = reviewService.createReview(extremeRequest);
-
-        // then
-        assertNotNull(response);
-        assertEquals(1, response.getRating());
-        assertEquals(SizeFit.VERY_SMALL, response.getSizeFit());
-        assertEquals(Cushion.VERY_FIRM, response.getCushioning());
-        assertEquals(Stability.VERY_UNSTABLE, response.getStability());
-        assertTrue(response.getContent().contains("최악의 신발"));
-    }
-
-    // RE-02: 5단계 필터링으로 리뷰 목록 조회
-    @Test
-    @DisplayName("Given very big size filter_When get filtered reviews_Then return matching reviews")
-    void givenVeryBigSizeFilter_whenGetFilteredReviews_thenReturnMatchingReviews() {
+    @DisplayName("인증되지 않은 사용자가 리뷰를 생성하려 하면 예외가 발생한다")
+    void createReviewWithUnauthenticatedUser() {
         // given
-        Long productId = 1L;
-        SizeFit targetSizeFit = SizeFit.VERY_BIG; // 매우 큰 사이즈만 필터링
+        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
+            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
+            given(securityContext.getAuthentication()).willReturn(null);
 
-        Review bigSizeReview = Review.builder()
-                .reviewId(1L)
-                .content("사이즈가 매우 커서 발이 헐렁거려요")
-                .sizeFit(SizeFit.VERY_BIG)
-                .cushioning(Cushion.NORMAL)
-                .stability(Stability.NORMAL)
-                .status(ReviewStatus.ACTIVE)
-                .build();
-
-        List<Review> reviews = List.of(bigSizeReview);
-        when(reviewRepository.findByProductIdAndSizeFitAndStatus(productId, targetSizeFit, ReviewStatus.ACTIVE))
-                .thenReturn(reviews);
-
-        // ReviewImageRepository Mock 설정 추가
-        when(reviewImageRepository.findByReviewIdOrderByImageOrder(any())).thenReturn(new ArrayList<>());
-
-        // when
-        List<ReviewDetailResponse> responses = reviewService.getReviewsBySizeFit(productId, targetSizeFit);
-
-        // then
-        assertEquals(1, responses.size());
-        assertEquals(SizeFit.VERY_BIG, responses.get(0).getSizeFit());
-        assertTrue(responses.get(0).getContent().contains("매우 커서"));
+            // when & then
+            assertThatThrownBy(() -> reviewService.createReview(createRequest))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("로그인이 필요합니다");
+        }
     }
 
     @Test
-    @DisplayName("Given very soft cushioning filter_When get reviews_Then return ultra comfort reviews")
-    void givenVerySoftCushioningFilter_whenGetReviews_thenReturnUltraComfortReviews() {
+    @DisplayName("상품별 리뷰 목록을 성공적으로 조회할 수 있다")
+    void getProductReviewsSuccessfully() {
         // given
-        Long productId = 1L;
-        Cushion targetCushioning = Cushion.VERY_SOFT;
+        List<Review> reviews = List.of(testReview);
+        Page<Review> reviewPage = new PageImpl<>(reviews, PageRequest.of(0, 20), 1);
 
-        Review ultraSoftReview = Review.builder()
-                .reviewId(1L)
-                .content("쿠션이 매우 부드러워서 구름 위를 걷는 느낌")
-                .cushioning(Cushion.VERY_SOFT)
-                .sizeFit(SizeFit.PERFECT)
-                .stability(Stability.NORMAL)
-                .status(ReviewStatus.ACTIVE)
-                .build();
-
-        List<Review> reviews = List.of(ultraSoftReview);
-        when(reviewRepository.findByProductIdAndCushioningAndStatus(productId, targetCushioning, ReviewStatus.ACTIVE))
-                .thenReturn(reviews);
-
-        // ReviewImageRepository Mock 설정 추가
-        when(reviewImageRepository.findByReviewIdOrderByImageOrder(any())).thenReturn(new ArrayList<>());
+        given(reviewRepository.findActiveReviewsByProductId(1L, PageRequest.of(0, 20)))
+                .willReturn(reviewPage);
+        given(reviewRepository.findAverageRatingByProductId(1L)).willReturn(4.5);
+        given(reviewRepository.countActiveReviewsByProductId(1L)).willReturn(10L);
 
         // when
-        List<ReviewDetailResponse> responses = reviewService.getReviewsByCushioning(productId, targetCushioning);
+        ReviewListResponse response = reviewService.getProductReviews(1L, 0, 20, "latest");
 
         // then
-        assertEquals(1, responses.size());
-        assertEquals(Cushion.VERY_SOFT, responses.get(0).getCushioning());
-        assertTrue(responses.get(0).getContent().contains("구름 위를 걷는"));
+        assertThat(response.getReviews()).hasSize(1);
+        assertThat(response.getTotalElements()).isEqualTo(1L);
+        assertThat(response.getAverageRating()).isEqualTo(4.5);
+        assertThat(response.getTotalReviews()).isEqualTo(10L);
     }
 
-    // RE-03: 리뷰 상세 조회
     @Test
-    @DisplayName("Given existing review id_When get review detail_Then return 5-level characteristics")
-    void givenExistingReviewId_whenGetReviewDetail_thenReturn5LevelCharacteristics() {
+    @DisplayName("리뷰 상세 정보를 성공적으로 조회할 수 있다")
+    void getReviewSuccessfully() {
         // given
-        Long reviewId = 1L;
-        when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
-
-        // ReviewImageRepository Mock 설정 추가
-        when(reviewImageRepository.findByReviewIdOrderByImageOrder(reviewId)).thenReturn(new ArrayList<>());
+        given(reviewRepository.findById(1L)).willReturn(Optional.of(testReview));
 
         // when
-        ReviewDetailResponse response = reviewService.getReviewDetail(reviewId);
+        ReviewResponse response = reviewService.getReview(1L);
 
         // then
-        assertNotNull(response);
-        assertEquals(reviewId, response.getReviewId());
-        assertEquals(SizeFit.PERFECT, response.getSizeFit());
-        assertEquals(Cushion.VERY_SOFT, response.getCushioning());
-        assertEquals(Stability.VERY_STABLE, response.getStability());
+        assertThat(response.getReviewId()).isEqualTo(1L);
+        assertThat(response.getTitle()).isEqualTo("좋은 신발입니다");
+        assertThat(response.getRating()).isEqualTo(5);
+        assertThat(response.getUserName()).isEqualTo("테스트사용자");
     }
 
-    // RE-04: 시간 경과에 따른 특성 변화 업데이트
     @Test
-    @DisplayName("Given wearing time effect_When update review characteristics_Then reflect changes")
-    void givenWearingTimeEffect_whenUpdateReviewCharacteristics_thenReflectChanges() {
+    @DisplayName("존재하지 않는 리뷰를 조회하면 예외가 발생한다")
+    void getReviewNotFound() {
         // given
-        Long reviewId = 1L;
-        ReviewUpdateRequest updateRequest = ReviewUpdateRequest.builder()
-                .content("한 달 신어보니 처음과 달라졌어요. 늘어나서 커지고 쿠션도 주저앉았네요")
-                .rating(3)
-                .sizeFit(SizeFit.BIG)      // 늘어나서 커짐
-                .cushioning(Cushion.FIRM)  // 쿠션이 주저앉아서 단단해짐
-                .stability(Stability.UNSTABLE) // 안정성도 떨어짐
-                .build();
+        given(reviewRepository.findById(999L)).willReturn(Optional.empty());
 
-        when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
-        when(reviewRepository.save(any(Review.class))).thenReturn(review);
+        // when & then
+        assertThatThrownBy(() -> reviewService.getReview(999L))
+                .isInstanceOf(ReviewException.ReviewNotFoundException.class)
+                .hasMessageContaining("리뷰를 찾을 수 없습니다");
+    }
+
+    @Test
+    @DisplayName("사용자가 존재하지 않으면 예외가 발생한다")
+    void createReviewWithNonExistentUser() {
+        // given
+        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
+            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
+            mockSecurityContext();
+            given(userRepository.findByEmail("test@test.com")).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> reviewService.createReview(createRequest))
+                    .isInstanceOf(BusinessException.class);
+        }
+    }
+
+    @Test
+    @DisplayName("평균 평점이 null인 경우 0.0을 반환한다")
+    void getProductReviewsWithNullAverageRating() {
+        // given
+        List<Review> reviews = List.of(testReview);
+        Page<Review> reviewPage = new PageImpl<>(reviews, PageRequest.of(0, 20), 1);
+
+        given(reviewRepository.findActiveReviewsByProductId(1L, PageRequest.of(0, 20)))
+                .willReturn(reviewPage);
+        given(reviewRepository.findAverageRatingByProductId(1L)).willReturn(null); // null 반환
+        given(reviewRepository.countActiveReviewsByProductId(1L)).willReturn(10L);
 
         // when
-        assertDoesNotThrow(() -> {
-            reviewService.updateReview(reviewId, updateRequest);
-        });
+        ReviewListResponse response = reviewService.getProductReviews(1L, 0, 20, "latest");
 
         // then
-        verify(reviewRepository, times(1)).findById(reviewId);
-        verify(reviewRepository, times(1)).save(any(Review.class));
+        assertThat(response.getAverageRating()).isEqualTo(0.0);
+    }
+
+    private void mockSecurityContext() {
+        given(securityContext.getAuthentication()).willReturn(authentication);
+        given(authentication.isAuthenticated()).willReturn(true);
+        given(authentication.getName()).willReturn("test@test.com");
     }
 }
