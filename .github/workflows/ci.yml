@@ -33,6 +33,7 @@ jobs:
           SPRING_PROFILES_ACTIVE: test
           APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
       - name: Generate Test Coverage Report
         run: ./gradlew jacocoTestReport
 
@@ -49,7 +50,7 @@ jobs:
           name: test-results
           path: build/test-results/test/*.xml
 
-      - name: Upload Test Coverage # 테스트 커버리지 보고서 아티팩트를 업로드합니다.
+      - name: Upload Test Coverage
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -57,8 +58,9 @@ jobs:
           path: build/reports/jacoco/test/jacocoTestReport.xml
 
       - name: Analyze with SonarQube
+        if: github.event_name == 'pull_request' || github.event_name == 'push'
         run: |
-          ./gradlew sonar
+          ./gradlew sonar --debug
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
