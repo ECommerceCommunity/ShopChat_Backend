@@ -6,6 +6,11 @@ plugins {
 	id 'jacoco'
 }
 
+// JAR 빌드 시 application-test.properties 파일을 제외하도록 설정
+jar {
+	exclude '**/application-test.properties'
+}
+
 group = 'com.cMall'
 version = '0.0.1-SNAPSHOT'
 
