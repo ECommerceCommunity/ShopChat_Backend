@@ -24,6 +24,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Clean Gradle Build Cache
+        run: ./gradlew --build-cache clean
+
       - name: Clean build directory
         run: ./gradlew clean
 
@@ -60,7 +63,7 @@ jobs:
       - name: Analyze with SonarQube
         if: github.event_name == 'pull_request' || github.event_name == 'push'
         run: |
-          ./gradlew sonar --debug
+          ./gradlew sonar --debug --stacktrace
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
