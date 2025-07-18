@@ -60,6 +60,16 @@ jobs:
           name: test-coverage
           path: build/reports/jacoco/test/jacocoTestReport.xml
 
+      - name: Debug SONAR_TOKEN
+        run: |
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "SONAR_TOKEN is not set"
+          else
+            echo "SONAR_TOKEN is set (length: ${#SONAR_TOKEN})"
+          fi
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
       - name: Analyze with SonarQube
         run: |
           ./gradlew sonar -Dsonar.branch.name=${{ github.ref_name }}
