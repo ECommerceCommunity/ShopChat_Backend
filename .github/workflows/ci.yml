@@ -1,5 +1,8 @@
 name: Spring Boot CI Pipeline
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ "main", "develop" ]
@@ -24,6 +27,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Clean Gradle Build Cache
+        run: ./gradlew --build-cache clean
+
       - name: Clean build directory
         run: ./gradlew clean
 
@@ -31,23 +37,17 @@ jobs:
         run: ./gradlew test --continue
         env:
           SPRING_PROFILES_ACTIVE: test
-
+          APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
+          JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
 
       - name: Generate Test Coverage Report
         run: ./gradlew jacocoTestReport
 
-      - name: Build Project (without tests) # 테스트를 제외하고 프로젝트를 빌드합니다.
-        # 이 단계에서는 application.properties가 기본으로 사용되며,
-        # 만약 해당 파일에 환경 변수(DB_HOST, SERVER_PORT 등)가 정의되어 있고,
-        # 빌드 시에 해당 변수들이 필요하다면 아래 'env' 섹션을 추가해야 합니다.
-        # 일반적으로 JAR/WAR 파일 생성 시에는 플레이스홀더를 포함한 채로 빌드하고,
-        # 실제 실행 환경에서 환경 변수를 주입하는 것이 일반적입니다.
-        # 하지만 만약 빌드 자체가 특정 환경 변수를 필요로 한다면:
-        # env:
-        #   DB_HOST: ${{ secrets.DB_HOST_PROD }} # 예시: 실제 운영 DB 호스트
-        #   DB_PORT: ${{ secrets.DB_PORT_PROD }}
-        #   SPRING_PROFILES_ACTIVE: production # 만약 빌드 시에 'production' 프로파일을 사용하고 싶다면
+      - name: Build Project (without tests)
         run: ./gradlew build -x test
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
 
       - name: Upload Test Results
         if: always()
@@ -63,13 +63,23 @@ jobs:
           name: test-coverage
           path: build/reports/jacoco/test/jacocoTestReport.xml
 
-      - name: Analyze with SonarQube
+      - name: Debug SONAR_TOKEN
         run: |
-          ./gradlew sonarqube \
-          -Dsonar.projectKey=ECommerceCommunity_FeedShop_Backend \
-          -Dsonar.projectName="FeedShop_Backend" \
-          -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
-          -Dsonar.organization=ecommercecommunity #
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "SONAR_TOKEN is not set"
+          else
+            echo "SONAR_TOKEN is set (length: ${#SONAR_TOKEN})"
+          fi
         env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Analyze with SonarQube
+        # 'push' 이벤트일 때만 이 스텝을 실행하도록 조건 추가
+        if: github.event_name == 'push'
+        run: |
+          ./gradlew sonar -Dsonar.branch.name=${{ github.ref_name }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
