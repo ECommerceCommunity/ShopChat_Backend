@@ -60,7 +60,8 @@ public class SecurityConfig {
                       "/swagger-resources/**",
                       "/api/products", // 현재 브랜치에 있던 내용
                       "/api/products/**", // 현재 브랜치에 있던 내용
-                            "/api/events", "/api/events/**"
+                            "/api/events", "/api/events/**",
+                            "/api/reviews/products/**","/api/reviews/{reviewId}"
                     ).permitAll()
                     .requestMatchers("/api/users/admin/**").hasRole("ADMIN")
                     .requestMatchers("/api/seller/**").hasRole("SELLER")
@@ -78,6 +79,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(Arrays.asList(
+                "https://localhost:8443", // 개발용 HTTPS
                 "https://feedshop-frontend.vercel.app/", // 프론트엔드 실제 배포 주소
                 "http://localhost:3000"
         ));
