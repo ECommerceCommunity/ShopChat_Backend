@@ -75,4 +75,4 @@ npm start
 
 애플리케이션 실행 후, 아래 URL로 접속하여 API 문서를 확인할 수 있습니다.
 
--   [https://localhost:8443/swagger-ui.html](https://localhost:8443/swagger-ui.html)
+-   [https://localhost:8443/swagger-ui.html](https://localhost:8443/swagger-ui/index.html)
