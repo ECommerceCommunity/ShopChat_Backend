@@ -1,8 +1,5 @@
 name: Spring Boot CI Pipeline
 
-permissions:
-  contents: read
-
 on:
   push:
     branches: [ "main", "develop" ]
@@ -38,7 +35,7 @@ jobs:
         env:
           SPRING_PROFILES_ACTIVE: test
           APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
-          JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
       - name: Generate Test Coverage Report
         run: ./gradlew jacocoTestReport
@@ -74,8 +71,9 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Analyze with SonarQube
+        if: github.event_name == 'pull_request' || github.event_name == 'push'
         run: |
-          ./gradlew sonar -Dsonar.branch.name=${{ github.ref_name }}
+          ./gradlew sonar --debug --stacktrace
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
