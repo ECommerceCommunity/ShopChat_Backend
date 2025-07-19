@@ -37,4 +37,10 @@ public class ProductException {
             super(ErrorCode.PRODUCT_IMAGE_NOT_FOUND);
         }
     }
+
+    public static class DuplicateProductNameException extends BusinessException {
+        public DuplicateProductNameException() {
+            super(ErrorCode.DUPLICATE_PRODUCT_NAME);
+        }
+    }
 }

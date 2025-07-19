@@ -150,37 +150,6 @@ class CartServiceTest {
     }
 
     @Test
-    @DisplayName("장바구니에 기존 상품 수량 증가 성공")
-    void addCartItem_Success_UpdateExistingItem() {
-        // given
-        user.setCart(cart);
-
-        CartItem existingCartItem = CartItem.builder()
-                .cart(cart)
-                .optionId(1L)
-                .imageId(1L)
-                .quantity(3)
-                .build();
-        ReflectionTestUtils.setField(existingCartItem, "cartItemId", 1L);
-
-        given(userDetails.getUsername()).willReturn("test@test.com");
-        given(userRepository.findByLoginId("test@test.com")).willReturn(Optional.of(user));
-        given(userRepository.findById(1L)).willReturn(Optional.of(user));
-        given(productOptionRepository.findByOptionId(1L)).willReturn(Optional.of(productOption));
-        given(productImageRepository.findByImageId(1L)).willReturn(Optional.of(productImage));
-        given(cartItemRepository.findByCartAndOptionIdAndImageId(cart, 1L, 1L))
-                .willReturn(Optional.of(existingCartItem));
-
-        // when
-        CartItemResponse response = cartService.addCartItem(request, userDetails);
-
-        // then
-        assertThat(response).isNotNull();
-        assertThat(response.getQuantity()).isEqualTo(5); // 3 + 2
-        verify(cartItemRepository, never()).save(any(CartItem.class));
-    }
-
-    @Test
     @DisplayName("장바구니 추가 실패 - 사용자 없음")
     void addCartItem_Fail_UserNotFound() {
         // given

@@ -55,7 +55,12 @@ public class ProductService {
         // 4. 카테고리 존재 확인
         Category category = getCategory(request.getCategoryId());
 
-        // 5. 상품 생성
+        // 5. 상품명 중복 확인
+        // (등록 시에는 아직 DB에 저장되지 않은 상태이므로
+        // 현재 DB 같은 스토어에 같은 이름이 있는지만 확인)
+        validateProductNameDuplication(userStore, request.getName());
+
+        // 6. 상품 생성
         Product product = Product.builder()
                 .name(request.getName())
                 .price(request.getPrice())
@@ -94,6 +99,13 @@ public class ProductService {
         Category category = null;
         if (request.getCategoryId() != null) {
             category = getCategory(request.getCategoryId());
+        }
+
+        // 5. 상품명 중복 확인
+        // 상품명을 변경했을 경우에만 중복 확인
+        // (수정 시에는 DB에 저장된 상품과 비교하는데 자기 상품과는 비교하지 않아야 한다.)
+        if (request.getName() != null && !request.getName().equals(product.getName())) {
+            validateProductNameDuplicationForUpdate(product.getStore(), request.getName(), productId);
         }
 
         // 5. 상품 필드 업데이트
@@ -183,6 +195,20 @@ public class ProductService {
     // 주문에 포함된 상품인지 확인
     private void validateProductNotInOrders(Long productId) {
         // 주문 도메인 작업할때 진행
+    }
+
+    // 상품명 중복 확인 (상품 등록 시)
+    private void validateProductNameDuplication(Store store, String productName) {
+        if (productRepository.existsByStoreAndName(store, productName)) {
+            throw new ProductException.DuplicateProductNameException();
+        }
+    }
+
+    // 상품명 중복 확인 (상품 수정 시)
+    private void validateProductNameDuplicationForUpdate(Store store, String productName, Long productId) {
+        if (productRepository.existsByStoreAndNameAndProductIdNot(store, productName, productId)) {
+            throw new ProductException.DuplicateProductNameException();
+        }
     }
 
     // 상품 이미지 생성

@@ -71,10 +71,10 @@ public class CartService {
                     .imageId(request.getImageId())
                     .quantity(request.getQuantity())
                     .build();
-
-            // 9. DB에 저장
-            cartItemRepository.save(cartItem);
         }
+
+        // 9. DB에 저장
+        cartItemRepository.save(cartItem);
 
         // 10. 응답값 리턴
         return CartItemResponse.from(cartItem);
