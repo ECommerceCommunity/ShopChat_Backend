@@ -42,7 +42,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
-    // develop 브랜치에서 추가된 @Value
     @Value("${app.verification-url}")
     private String verificationUrl;
 
@@ -61,8 +60,7 @@ public class UserService {
                 // PENDING 상태의 사용자가 존재한다면 (이메일 인증 미완료)
                 updateVerificationToken(existingUser); // private 메서드로 분리된 로직 사용
 
-                // ***** 여기에 누락된 save 호출을 추가합니다! *****
-                userRepository.save(existingUser); // <<-- 이 줄을 추가해야 합니다.
+                userRepository.save(existingUser);
 
                 sendVerificationEmail(existingUser, "회원가입 재인증을 완료해주세요.", "회원가입 재인증을 요청하셨습니다. 아래 링크를 클릭하여 이메일 인증을 완료해주세요:");
                 // 재인증 메일 발송 후 예외 처리 (DUPLICATE_EMAIL과 함께 메시지 전달)
@@ -111,7 +109,7 @@ public class UserService {
         return UserResponse.from(user);
     }
 
-    // 이메일 인증 토큰 업데이트 로직 (develop 브랜치에서 분리된 메서드)
+    // 이메일 인증 토큰 업데이트 로직
     private void updateVerificationToken(User user) {
         String newVerificationToken = UUID.randomUUID().toString();
         LocalDateTime newExpiryTime = LocalDateTime.now().plusHours(1);
@@ -122,7 +120,7 @@ public class UserService {
         // userRepository.save(user); // 이 부분은 호출하는 곳에서 처리
     }
 
-    // 이메일 전송 로직 (develop 브랜치에서 분리된 메서드)
+
     private void sendVerificationEmail(User user, String subject, String contentBody) {
         String verificationLink = verificationUrl + user.getVerificationToken();
         String emailSubject = "[cMall] " + subject;
@@ -174,7 +172,7 @@ public class UserService {
         userRepository.save(user); // 최종 상태 변경 및 토큰 초기화 저장
     }
 
-    // 공통 삭제 로직을 private 메서드로 분리 (develop 브랜치 방식 채택)
+    // 공통 삭제 로직을 private 메서드로 분리
     private void deleteUser(User user) {
         if (user.getStatus() == UserStatus.DELETED) {
             throw new UserException(USER_ALREADY_DELETED); // 이미 탈퇴된 계정 예외
@@ -188,7 +186,7 @@ public class UserService {
         // - 예시: boardService.updateAuthorToWithdrawn(userId);
     }
 
-    // 관리자 권한 확인 로직 (develop 브랜치 방식 채택)
+    // 관리자 권한 확인 로직
     private void checkAdminAuthority(String methodName) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() ||
