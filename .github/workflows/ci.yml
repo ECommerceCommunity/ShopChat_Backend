@@ -2,7 +2,6 @@ name: Spring Boot CI Pipeline
 
 permissions:
   contents: read
-  secrets: read
 
 on:
   push:
@@ -75,8 +74,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Analyze with SonarQube
-        # main 브랜치로의 'push' 이벤트이거나, main 브랜치로 향하는 'pull_request' 이벤트일 때만 실행
-        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.base_ref == 'refs/heads/main')
         run: |
           ./gradlew sonar -Dsonar.branch.name=${{ github.ref_name }}
         env:
