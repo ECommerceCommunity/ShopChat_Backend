@@ -1,7 +1,7 @@
 package com.cMall.feedShop.product.application.service;
 
-import com.cMall.feedShop.product.application.dto.ProductImageInfo;
-import com.cMall.feedShop.product.application.dto.ProductOptionInfo;
+import com.cMall.feedShop.product.application.dto.common.ProductImageInfo;
+import com.cMall.feedShop.product.application.dto.common.ProductOptionInfo;
 import com.cMall.feedShop.product.application.dto.response.*;
 import com.cMall.feedShop.product.application.exception.ProductException;
 import com.cMall.feedShop.product.application.util.DiscountCalculator;
