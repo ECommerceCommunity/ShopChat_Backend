@@ -1,51 +1,81 @@
-name: SonarCloud Analysis
+
+name: Spring Boot CI Pipeline
+
 on:
   push:
-    branches: [ main ]
+    branches: [ "main", "develop" ]
   pull_request:
-    types: [ opened, synchronize, reopened ]
+    branches: [ "main", "develop" ]
+
 jobs:
-  sonarcloud:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Required for SonarCloud to analyze commit history
-      - name: Set up JDK
-        uses: actions/setup-java@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Cache Gradle packages
-        uses: actions/cache@v3
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Clean Gradle Build Cache
+        run: ./gradlew --build-cache clean
+
+      - name: Clean build directory
+        run: ./gradlew clean
+
+      - name: Run Tests
+        run: ./gradlew test --continue
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
+          JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+
+      - name: Generate Test Coverage Report
+        run: ./gradlew jacocoTestReport
+
+      - name: Build Project (without tests)
+        run: ./gradlew build -x test
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
-          restore-keys: ${{ runner.os }}-gradle-
-      - name: Run tests and generate JaCoCo report
-        run: ./gradlew test jacocoTestReport --debug --stacktrace
-      - name: Verify JaCoCo report
-        run: ls -la build/reports/jacoco/test/ && cat build/reports/jacoco/test/jacocoTestReport.xml
-      - name: Test SonarCloud connection
-        run: curl -v https://sonarcloud.io
-      - name: Analyze with SonarCloud
-        uses: SonarSource/sonarqube-scan-action@v5.0.0
+          name: test-results
+          path: build/test-results/test/*.xml
+
+      - name: Upload Test Coverage # 테스트 커버리지 보고서 아티팩트를 업로드합니다.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage
+          path: build/reports/jacoco/test/jacocoTestReport.xml
+
+      - name: Debug SONAR_TOKEN
+        run: |
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "SONAR_TOKEN is not set"
+          else
+            echo "SONAR_TOKEN is set (length: ${#SONAR_TOKEN})"
+          fi
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: "https://sonarcloud.io"
-        with:
-          args: >
-            -Dsonar.projectKey=ECommerceCommunity_FeedShop_Backend
-            -Dsonar.organization=ecommercecommunity
-            -Dsonar.java.coveragePlugin=jacoco
-            -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
-            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }}
-            -Dsonar.pullrequest.branch=${{ github.head_ref }}
-            -Dsonar.pullrequest.base=${{ github.base_ref }}
-      - name: Debug PR info
+
+      - name: Analyze with SonarQube
         run: |
-          echo "PR Number: ${{ github.event.pull_request.number }}"
-          echo "Head Ref: ${{ github.head_ref }}"
-          echo "Base Ref: ${{ github.base_ref }}"
-          echo "Repository: ${{ github.repository }}"
+          ./gradlew sonar -Dsonar.branch.name=${{ github.ref_name }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
