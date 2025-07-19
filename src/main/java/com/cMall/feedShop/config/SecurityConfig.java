@@ -79,6 +79,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(Arrays.asList(
+                "https://localhost:8443", // 개발용 HTTPS
                 "https://feedshop-frontend.vercel.app/", // 프론트엔드 실제 배포 주소
                 "http://localhost:3000"
         ));
