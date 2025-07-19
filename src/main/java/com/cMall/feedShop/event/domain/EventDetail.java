@@ -3,12 +3,15 @@ package com.cMall.feedShop.event.domain;
 import lombok.*;
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import com.cMall.feedShop.common.BaseTimeEntity;
 
 @Entity
 @Table(name = "event_details")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class EventDetail {
+@AllArgsConstructor
+@Builder
+public class EventDetail extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,4 +57,9 @@ public class EventDetail {
 
     @Column(name = "rewards", columnDefinition = "TEXT")
     private String rewards;
+
+    // 연관관계 설정 메서드
+    public void setEvent(Event event) {
+        this.event = event;
+    }
 }

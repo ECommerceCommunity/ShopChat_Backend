@@ -22,6 +22,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpMethod;
 
 import java.util.Arrays;
 import java.util.List;
@@ -50,6 +51,7 @@ public class SecurityConfig {
                    .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
                 .authorizeHttpRequests(auth -> auth
+                    .requestMatchers(HttpMethod.POST, "/api/events").hasRole("ADMIN")
                     .requestMatchers(
                       "/api/auth/login",
                       "/api/auth/signup",
@@ -60,7 +62,8 @@ public class SecurityConfig {
                       "/swagger-resources/**",
                       "/api/products", // 현재 브랜치에 있던 내용
                       "/api/products/**", // 현재 브랜치에 있던 내용
-                            "/api/events", "/api/events/**"
+                      "/api/events",
+                      "/api/events/**"
                     ).permitAll()
                     .requestMatchers("/api/users/admin/**").hasRole("ADMIN")
                     .requestMatchers("/api/seller/**").hasRole("SELLER")

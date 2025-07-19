@@ -7,13 +7,16 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import com.cMall.feedShop.common.BaseTimeEntity;
 import java.util.List;
 
 @Entity
 @Table(name = "events")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Event {
+@AllArgsConstructor
+@Builder
+public class Event extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,6 +49,21 @@ public class Event {
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EventReward> rewards;
+
+    // 연관관계 설정 메서드
+    public void setEventDetail(EventDetail eventDetail) {
+        this.eventDetail = eventDetail;
+        if (eventDetail != null) {
+            eventDetail.setEvent(this);
+        }
+    }
+
+    public void setRewards(List<EventReward> rewards) {
+        this.rewards = rewards;
+        if (rewards != null) {
+            rewards.forEach(reward -> reward.setEvent(this));
+        }
+    }
 
     // 기타 연관관계 필요시 여기에 추가
 }

@@ -26,7 +26,8 @@ public class EventExceptionHandler {
                 request.getRequestURI(), 
                 request.getMethod(),
                 errorCode.getCode(), 
-                errorCode.getMessage());
+                errorCode.getMessage(),
+                exception);
 
         ApiResponse<Void> response = ApiResponse.<Void>builder()
                 .success(false)
@@ -47,7 +48,8 @@ public class EventExceptionHandler {
                 request.getRequestURI(), 
                 request.getMethod(),
                 errorCode.getCode(), 
-                errorCode.getMessage());
+                errorCode.getMessage(),
+                exception);
 
         ApiResponse<Void> response = ApiResponse.<Void>builder()
                 .success(false)
@@ -68,7 +70,8 @@ public class EventExceptionHandler {
                 request.getRequestURI(), 
                 request.getMethod(),
                 errorCode.getCode(), 
-                errorCode.getMessage());
+                errorCode.getMessage(),
+                exception);
 
         ApiResponse<Void> response = ApiResponse.<Void>builder()
                 .success(false)
@@ -77,5 +80,25 @@ public class EventExceptionHandler {
                 .build();
 
         return ResponseEntity.status(errorCode.getStatus()).body(response);
+    }
+
+    // 이벤트 생성 시 검증 오류 (IllegalArgumentException)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(
+            IllegalArgumentException exception, HttpServletRequest request) {
+        
+        log.warn("이벤트 생성 검증 오류 - URI: {}, Method: {}, ErrorMessage: {}",
+                request.getRequestURI(), 
+                request.getMethod(),
+                exception.getMessage(),
+                exception);
+
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .success(false)
+                .message("이벤트 생성 요청이 유효하지 않습니다: " + exception.getMessage())
+                .data(null)
+                .build();
+
+        return ResponseEntity.badRequest().body(response);
     }
 } 
