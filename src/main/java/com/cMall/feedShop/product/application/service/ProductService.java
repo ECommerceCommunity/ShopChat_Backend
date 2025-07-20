@@ -20,6 +20,7 @@ import com.cMall.feedShop.store.application.exception.StoreException;
 import com.cMall.feedShop.store.domain.model.Store;
 import com.cMall.feedShop.store.domain.repository.StoreRepository;
 import com.cMall.feedShop.user.domain.enums.UserRole;
+import com.cMall.feedShop.user.domain.exception.UserException;
 import com.cMall.feedShop.user.domain.model.User;
 import com.cMall.feedShop.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +43,6 @@ public class ProductService {
 
     // 상품 등록
     public ProductCreateResponse createProduct(ProductCreateRequest request, UserDetails userDetails) {
-        System.out.println("ProductService.createProduct() called with request: " + request);
         // 1. 현재 사용자 ID 가져오기
         Long currentUserId = getCurrentUserId(userDetails);
 
@@ -147,7 +147,7 @@ public class ProductService {
     private Long getCurrentUserId(UserDetails userDetails) {
         String login_id = userDetails.getUsername();
         User user = userRepository.findByLoginId(login_id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new UserException.UserNotFoundException());
 
         return user.getId();
     }
@@ -157,7 +157,7 @@ public class ProductService {
         // 사용자가 SELLER 권한을 가지고 있는지 확인
         // UserRepository 에서 사용자 조회 후 role 확인
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new UserException.UserNotFoundException());
 
         if (user.getRole() != UserRole.SELLER) {
             throw new BusinessException(ErrorCode.FORBIDDEN);
