@@ -1,6 +1,7 @@
 package com.cMall.feedShop.product.application.service;
 
 import com.cMall.feedShop.product.application.util.DiscountCalculator;
+
 import com.cMall.feedShop.product.domain.enums.DiscountType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,22 +22,22 @@ class DiscountCalculatorTest {
     }
 
     @Test
-    @DisplayName("할인타입이 NONE일때_calculateDiscountPrice 호출하면_원가가 그대로 반환된다")
-    void givenDiscountTypeNone_whenCalculateDiscountPrice_thenReturnOriginalPrice() {
+    @DisplayName("할인 없음 - 원가 그대로 반환")
+    void calculateDiscountPrice_None() {
         // given
         BigDecimal originalPrice = new BigDecimal("50000");
 
         // when
         BigDecimal result = discountCalculator.calculateDiscountPrice(
-                originalPrice, DiscountType.NONE, null);
+                originalPrice, DiscountType.NONE, new BigDecimal("10"));
 
         // then
         assertThat(result).isEqualTo(originalPrice);
     }
 
     @Test
-    @DisplayName("고정할인값이 주어졌을때_calculateDiscountPrice 호출하면_할인된 가격이 반환된다")
-    void givenFixedDiscountValue_whenCalculateDiscountPrice_thenReturnDiscountedPrice() {
+    @DisplayName("고정 할인 - 할인 금액 차감")
+    void calculateDiscountPrice_FixedDiscount() {
         // given
         BigDecimal originalPrice = new BigDecimal("50000");
         BigDecimal discountValue = new BigDecimal("5000");
@@ -50,23 +51,8 @@ class DiscountCalculatorTest {
     }
 
     @Test
-    @DisplayName("비율할인값이 주어졌을때_calculateDiscountPrice 호출하면_할인된 가격이 반환된다")
-    void givenRateDiscountValue_whenCalculateDiscountPrice_thenReturnDiscountedPrice() {
-        // given
-        BigDecimal originalPrice = new BigDecimal("50000");
-        BigDecimal discountValue = new BigDecimal("10"); // 10%
-
-        // when
-        BigDecimal result = discountCalculator.calculateDiscountPrice(
-                originalPrice, DiscountType.RATE_DISCOUNT, discountValue);
-
-        // then
-        assertThat(result).isEqualTo(new BigDecimal("45000"));
-    }
-
-    @Test
-    @DisplayName("고정할인값이 원가보다 클때_calculateDiscountPrice 호출하면_0원이 반환된다")
-    void givenFixedDiscountGreaterThanPrice_whenCalculateDiscountPrice_thenReturnZero() {
+    @DisplayName("고정 할인 - 할인 금액이 원가보다 큰 경우 0 반환")
+    void calculateDiscountPrice_FixedDiscount_ExceedsOriginalPrice() {
         // given
         BigDecimal originalPrice = new BigDecimal("30000");
         BigDecimal discountValue = new BigDecimal("50000");
@@ -80,92 +66,88 @@ class DiscountCalculatorTest {
     }
 
     @Test
-    @DisplayName("비율할인이 100퍼센트일때_calculateDiscountPrice 호출하면_0원이 반환된다")
-    void givenRateDiscount100Percent_whenCalculateDiscountPrice_thenReturnZero() {
+    @DisplayName("비율 할인 - 퍼센트 할인 적용")
+    void calculateDiscountPrice_RateDiscount() {
         // given
         BigDecimal originalPrice = new BigDecimal("50000");
-        BigDecimal discountValue = new BigDecimal("100"); // 100%
+        BigDecimal discountValue = new BigDecimal("20"); // 20%
 
         // when
         BigDecimal result = discountCalculator.calculateDiscountPrice(
                 originalPrice, DiscountType.RATE_DISCOUNT, discountValue);
 
         // then
-        assertThat(result).isEqualTo(new BigDecimal("0"));
+        assertThat(result).isEqualTo(new BigDecimal("40000"));
     }
 
     @Test
-    @DisplayName("원가가 null일때_calculateDiscountPrice 호출하면_null이 반환된다")
-    void givenNullOriginalPrice_whenCalculateDiscountPrice_thenReturnNull() {
+    @DisplayName("비율 할인 - 소수점 반올림 처리")
+    void calculateDiscountPrice_RateDiscount_Rounding() {
         // given
-        BigDecimal originalPrice = null;
-        BigDecimal discountValue = new BigDecimal("5000");
+        BigDecimal originalPrice = new BigDecimal("33333");
+        BigDecimal discountValue = new BigDecimal("15"); // 15%
 
         // when
         BigDecimal result = discountCalculator.calculateDiscountPrice(
-                originalPrice, DiscountType.FIXED_DISCOUNT, discountValue);
+                originalPrice, DiscountType.RATE_DISCOUNT, discountValue);
+
+        // then
+        assertThat(result).isEqualTo(new BigDecimal("28333")); // 반올림 적용
+    }
+
+    @Test
+    @DisplayName("null 값 처리 - 원가 null")
+    void calculateDiscountPrice_NullOriginalPrice() {
+        // when
+        BigDecimal result = discountCalculator.calculateDiscountPrice(
+                null, DiscountType.RATE_DISCOUNT, new BigDecimal("10"));
 
         // then
         assertThat(result).isNull();
     }
 
     @Test
-    @DisplayName("할인값이 null일때_calculateDiscountPrice 호출하면_원가가 반환된다")
-    void givenNullDiscountValue_whenCalculateDiscountPrice_thenReturnOriginalPrice() {
+    @DisplayName("null 값 처리 - 할인 타입 null")
+    void calculateDiscountPrice_NullDiscountType() {
         // given
         BigDecimal originalPrice = new BigDecimal("50000");
-        BigDecimal discountValue = null;
 
         // when
         BigDecimal result = discountCalculator.calculateDiscountPrice(
-                originalPrice, DiscountType.FIXED_DISCOUNT, discountValue);
+                originalPrice, null, new BigDecimal("10"));
 
         // then
         assertThat(result).isEqualTo(originalPrice);
     }
 
     @Test
-    @DisplayName("할인값이 0일때_calculateDiscountPrice 호출하면_원가가 반환된다")
-    void givenZeroDiscountValue_whenCalculateDiscountPrice_thenReturnOriginalPrice() {
+    @DisplayName("null 값 처리 - 할인 값 null")
+    void calculateDiscountPrice_NullDiscountValue() {
         // given
         BigDecimal originalPrice = new BigDecimal("50000");
-        BigDecimal discountValue = BigDecimal.ZERO;
 
         // when
         BigDecimal result = discountCalculator.calculateDiscountPrice(
-                originalPrice, DiscountType.FIXED_DISCOUNT, discountValue);
+                originalPrice, DiscountType.RATE_DISCOUNT, null);
 
         // then
         assertThat(result).isEqualTo(originalPrice);
     }
 
     @Test
-    @DisplayName("음수 할인값이 주어졌을때_calculateDiscountPrice 호출하면_원가가 반환된다")
-    void givenNegativeDiscountValue_whenCalculateDiscountPrice_thenReturnOriginalPrice() {
+    @DisplayName("0 이하 할인 값 처리")
+    void calculateDiscountPrice_ZeroOrNegativeDiscountValue() {
         // given
         BigDecimal originalPrice = new BigDecimal("50000");
-        BigDecimal discountValue = new BigDecimal("-1000");
 
         // when
-        BigDecimal result = discountCalculator.calculateDiscountPrice(
-                originalPrice, DiscountType.FIXED_DISCOUNT, discountValue);
+        BigDecimal result1 = discountCalculator.calculateDiscountPrice(
+                originalPrice, DiscountType.RATE_DISCOUNT, BigDecimal.ZERO);
+        BigDecimal result2 = discountCalculator.calculateDiscountPrice(
+                originalPrice, DiscountType.RATE_DISCOUNT, new BigDecimal("-5"));
 
         // then
-        assertThat(result).isEqualTo(originalPrice);
-    }
-
-    @Test
-    @DisplayName("소수점이 포함된 비율할인이 주어졌을때_calculateDiscountPrice 호출하면_반올림된 가격이 반환된다")
-    void givenDecimalRateDiscount_whenCalculateDiscountPrice_thenReturnRoundedPrice() {
-        // given
-        BigDecimal originalPrice = new BigDecimal("10000");
-        BigDecimal discountValue = new BigDecimal("33.33"); // 33.33%
-
-        // when
-        BigDecimal result = discountCalculator.calculateDiscountPrice(
-                originalPrice, DiscountType.RATE_DISCOUNT, discountValue);
-
-        // then
-        assertThat(result).isEqualTo(new BigDecimal("6667")); // 반올림 결과
+        assertThat(result1).isEqualTo(originalPrice);
+        assertThat(result2).isEqualTo(originalPrice);
     }
 }

@@ -3,5 +3,8 @@ package com.cMall.feedShop.product.domain.repository;
 import com.cMall.feedShop.product.domain.model.ProductOption;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface ProductOptionRepository extends JpaRepository<ProductOption, Long> {
+    Optional<ProductOption> findByOptionId(Long optionId);
 }
