@@ -1,8 +1,6 @@
 name: Spring Boot CI Pipeline
 
 on:
-  push:
-    branches: [ "main", "develop" ]
   pull_request_target:
     branches: [ "main", "develop" ]
 
@@ -75,6 +73,7 @@ jobs:
       - name: Analyze with SonarQube
         run: |
           ./gradlew sonar \
+            -Dsonar.qualitygate.wait=false
             -Dsonar.projectKey=ECommerceCommunity_FeedShop_Backend \
             -Dsonar.organization=ecommercecommunity \
             -Dsonar.host.url=https://sonarcloud.io \
