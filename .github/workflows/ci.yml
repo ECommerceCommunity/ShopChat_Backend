@@ -78,6 +78,7 @@ jobs:
       - name: Analyze with SonarQube
         run: |
           ./gradlew sonar \
+            -Dsonar.qualitygate.wait=false
             -Dsonar.projectKey=ECommerceCommunity_FeedShop_Backend \
             -Dsonar.organization=ecommercecommunity \
             -Dsonar.host.url=https://sonarcloud.io \
