@@ -3,7 +3,7 @@ name: Spring Boot CI Pipeline
 on:
   push:
     branches: [ "main", "develop" ]
-  pull_request_target: # pull_request 대신 pull_request_target 사용
+  pull_request_target:
     branches: [ "main", "develop" ]
 
 jobs:
@@ -13,12 +13,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        # pull_request_target을 사용할 때 PR의 코드를 정확히 체크아웃하기 위한 중요한 설정
-        # 이렇게 해야 악성 코드 주입 위험을 줄일 수 있습니다.
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          # GITHUB_TOKEN이 필요한 경우 추가 (기본적으로는 불필요)
-          # token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -67,7 +63,6 @@ jobs:
           path: build/reports/jacoco/test/jacocoTestReport.xml
 
       - name: Debug SONAR_TOKEN
-        # pull_request_target은 secrets에 접근할 수 있으므로, 이제 이 스텝에서 토큰이 설정되었음을 확인할 수 있을 것입니다.
         run: |
           if [ -z "$SONAR_TOKEN" ]; then
             echo "SONAR_TOKEN is not set"
@@ -86,6 +81,6 @@ jobs:
             -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.branch.name=${{ github.ref_name }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # pull_request_target에서는 기본적으로 쓰기 권한이 부여됨 (scope: contents, pulls, packages)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
