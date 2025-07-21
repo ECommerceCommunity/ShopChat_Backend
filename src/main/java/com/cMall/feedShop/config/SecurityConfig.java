@@ -54,17 +54,15 @@ public class SecurityConfig {
                     .requestMatchers(
                       "/api/auth/login",
                       "/api/auth/signup",
-                      "/api/auth/verify-email", // develop 브랜치에 있던 내용
+                      "/api/auth/verify-email",
                       "/public/**",
                       "/swagger-ui/**",
                       "/v3/api-docs/**",
                       "/swagger-resources/**",
-                      "/api/products", // 현재 브랜치에 있던 내용
-                      "/api/products/**", // 현재 브랜치에 있던 내용
+                      "/api/products",
+                      "/api/products/**",
                       "/api/events",
                       "/api/events/**"
-                      "/api/products",
-                      "/api/products/**", "/api/events", "/api/events/**"
                     ).permitAll()
                     .requestMatchers("/api/users/admin/**").hasRole("ADMIN")
                     .requestMatchers("/api/seller/**").hasRole("SELLER")
