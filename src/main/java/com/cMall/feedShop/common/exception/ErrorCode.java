@@ -34,6 +34,12 @@ public enum ErrorCode {
     CATEGORY_NOT_FOUND(404, "P002", "카테고리를 찾을 수 없습니다."),
     OUT_OF_STOCK(409, "P003", "재고가 부족합니다."),
     PRODUCT_IN_ORDER(409, "P004", "상품이 주문에 포함되어 있어 삭제할 수 없습니다."),
+    PRODUCT_OPTION_NOT_FOUND(404, "P005", "존재하지 않는 상품 옵션입니다."),
+    PRODUCT_IMAGE_NOT_FOUND(404, "P006", "존재하지 않는 상품 이미지입니다."),
+    DUPLICATE_PRODUCT_NAME(409, "P007", "이미 존재하는 상품 이름입니다."),
+
+    // 장바구니
+    ZERO_QUANTITY(400, "CA001", "수량은 1개 이상이어야 합니다."),
 
     // 주문
     ORDER_NOT_FOUND(404, "O001", "주문을 찾을 수 없습니다."),

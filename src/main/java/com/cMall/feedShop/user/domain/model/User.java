@@ -1,5 +1,6 @@
 package com.cMall.feedShop.user.domain.model;
 
+import com.cMall.feedShop.cart.domain.model.Cart;
 import com.cMall.feedShop.common.BaseTimeEntity;
 import com.cMall.feedShop.user.domain.enums.UserRole;
 import com.cMall.feedShop.user.domain.enums.UserStatus;
@@ -36,6 +37,9 @@ public class User extends BaseTimeEntity implements UserDetails {
 
     @OneToOne(mappedBy ="user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private UserProfile userProfile;
+
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Cart cart;
 
     @Column(name = "login_id", unique = true, nullable = false, length = 100)
     private String loginId;
