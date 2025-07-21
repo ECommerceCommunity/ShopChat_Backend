@@ -5,15 +5,13 @@ import com.cMall.feedShop.event.application.dto.response.EventCreateResponseDto;
 import com.cMall.feedShop.event.application.exception.EventException;
 import com.cMall.feedShop.event.domain.Event;
 import com.cMall.feedShop.event.domain.EventDetail;
-import com.cMall.feedShop.event.domain.EventReward;
+import com.cMall.feedShop.event.domain.enums.EventStatus;
 import com.cMall.feedShop.event.domain.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,10 +27,10 @@ public class EventCreateService {
         // 입력값 검증
         eventValidator.validateEventCreateRequest(requestDto);
         
-        // Event 엔티티 생성
+        // Event 엔티티 생성 (상태는 자동 계산)
         Event event = Event.builder()
                 .type(requestDto.getType())
-                .status(requestDto.getStatus())
+                .status(EventStatus.UPCOMING) // 임시 상태, 나중에 자동 계산
                 .maxParticipants(requestDto.getMaxParticipants())
                 .createdBy(LocalDateTime.now())
                 .build();
@@ -50,20 +48,14 @@ public class EventCreateService {
                 .eventStartDate(requestDto.getEventStartDate())
                 .eventEndDate(requestDto.getEventEndDate())
                 .announcement(requestDto.getAnnouncement())
+                .rewards(requestDto.getRewards()) // 문자열로 저장
                 .build();
-        
-        // EventReward 엔티티들 생성
-        List<EventReward> rewards = requestDto.getRewards() != null ? 
-                requestDto.getRewards().stream()
-                        .map(rewardDto -> EventReward.builder()
-                                .conditionValue(rewardDto.getConditionValue())
-                                .rewardValue(rewardDto.getRewardValue())
-                                .build())
-                        .toList() : Collections.emptyList();
         
         // 연관관계 설정
         event.setEventDetail(eventDetail);
-        event.setRewards(rewards);
+        
+        // 상태 자동 계산 및 업데이트
+        event.updateStatusAutomatically();
         
         // 저장
         Event savedEvent = eventRepository.save(event);

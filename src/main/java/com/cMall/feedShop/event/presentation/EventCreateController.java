@@ -10,9 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StringUtils;
 
 @RestController
 @RequestMapping("/api/events")
@@ -27,22 +26,16 @@ public class EventCreateController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<EventCreateResponseDto>> createEvent(
         @ModelAttribute EventCreateRequestDto requestDto,
-        @RequestPart(value = "image", required = false) MultipartFile image,
-        @RequestPart(value = "rewards", required = false) String rewardsJson
+        @RequestPart(value = "image", required = false) MultipartFile image
     ) {
-        // rewards 파싱 (프론트에서 JSON.stringify로 보낸 경우)
-        if (rewardsJson != null && !rewardsJson.isBlank()) {
-            try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                List<EventCreateRequestDto.EventRewardRequestDto> rewards =
-                    objectMapper.readValue(rewardsJson,
-                        objectMapper.getTypeFactory().constructCollectionType(List.class, EventCreateRequestDto.EventRewardRequestDto.class));
-                requestDto.setRewards(rewards);
-            } catch (Exception e) {
-                throw new IllegalArgumentException("이벤트 보상 정보 파싱에 실패했습니다.", e);
-            }
+        // 이미지 파일 처리
+        if (image != null && !image.isEmpty()) {
+            // TODO: 실제 이미지 업로드 로직 구현
+            // 임시로 파일명을 imageUrl로 설정
+            String fileName = StringUtils.cleanPath(image.getOriginalFilename());
+            requestDto.setImageUrl("/uploads/events/" + fileName);
         }
-        // 이미지 파일 처리 필요시 requestDto.setImageUrl(...) 등으로 활용
+        
         EventCreateResponseDto responseDto = eventCreateService.createEvent(requestDto);
         ApiResponse<EventCreateResponseDto> response = ApiResponse.<EventCreateResponseDto>builder()
                 .success(true)

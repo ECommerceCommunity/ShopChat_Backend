@@ -22,7 +22,6 @@ class EventValidatorTest {
         
         validRequestDto = EventCreateRequestDto.builder()
                 .type(com.cMall.feedShop.event.domain.enums.EventType.BATTLE)
-                .status(com.cMall.feedShop.event.domain.enums.EventStatus.ONGOING)
                 .title("테스트 이벤트")
                 .description("테스트 이벤트 설명")
                 .eventStartDate(LocalDate.now())
@@ -45,7 +44,6 @@ class EventValidatorTest {
     void validateEventCreateRequest_NullType() {
         // Given
         validRequestDto = EventCreateRequestDto.builder()
-                .status(com.cMall.feedShop.event.domain.enums.EventStatus.ONGOING)
                 .title("테스트 이벤트")
                 .description("테스트 이벤트 설명")
                 .build();
@@ -56,27 +54,11 @@ class EventValidatorTest {
     }
 
     @Test
-    @DisplayName("이벤트 상태가 null인 경우 예외 발생")
-    void validateEventCreateRequest_NullStatus() {
-        // Given
-        validRequestDto = EventCreateRequestDto.builder()
-                .type(com.cMall.feedShop.event.domain.enums.EventType.BATTLE)
-                .title("테스트 이벤트")
-                .description("테스트 이벤트 설명")
-                .build();
-
-        // When & Then
-        assertThatThrownBy(() -> eventValidator.validateEventCreateRequest(validRequestDto))
-                .isInstanceOf(EventException.InvalidEventStatusException.class);
-    }
-
-    @Test
     @DisplayName("제목이 null인 경우 예외 발생")
     void validateEventCreateRequest_NullTitle() {
         // Given
         validRequestDto = EventCreateRequestDto.builder()
                 .type(com.cMall.feedShop.event.domain.enums.EventType.BATTLE)
-                .status(com.cMall.feedShop.event.domain.enums.EventStatus.ONGOING)
                 .description("테스트 이벤트 설명")
                 .build();
 
@@ -92,7 +74,6 @@ class EventValidatorTest {
         // Given
         validRequestDto = EventCreateRequestDto.builder()
                 .type(com.cMall.feedShop.event.domain.enums.EventType.BATTLE)
-                .status(com.cMall.feedShop.event.domain.enums.EventStatus.ONGOING)
                 .title("")
                 .description("테스트 이벤트 설명")
                 .build();
@@ -109,8 +90,23 @@ class EventValidatorTest {
         // Given
         validRequestDto = EventCreateRequestDto.builder()
                 .type(com.cMall.feedShop.event.domain.enums.EventType.BATTLE)
-                .status(com.cMall.feedShop.event.domain.enums.EventStatus.ONGOING)
                 .title("테스트 이벤트")
+                .build();
+
+        // When & Then
+        assertThatThrownBy(() -> eventValidator.validateEventCreateRequest(validRequestDto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("이벤트 설명은 필수입니다.");
+    }
+
+    @Test
+    @DisplayName("설명이 빈 문자열인 경우 예외 발생")
+    void validateEventCreateRequest_EmptyDescription() {
+        // Given
+        validRequestDto = EventCreateRequestDto.builder()
+                .type(com.cMall.feedShop.event.domain.enums.EventType.BATTLE)
+                .title("테스트 이벤트")
+                .description("")
                 .build();
 
         // When & Then
@@ -125,7 +121,6 @@ class EventValidatorTest {
         // Given
         validRequestDto = EventCreateRequestDto.builder()
                 .type(com.cMall.feedShop.event.domain.enums.EventType.BATTLE)
-                .status(com.cMall.feedShop.event.domain.enums.EventStatus.ONGOING)
                 .title("테스트 이벤트")
                 .description("테스트 이벤트 설명")
                 .eventStartDate(LocalDate.now().plusDays(7))
@@ -144,7 +139,6 @@ class EventValidatorTest {
         // Given
         validRequestDto = EventCreateRequestDto.builder()
                 .type(com.cMall.feedShop.event.domain.enums.EventType.BATTLE)
-                .status(com.cMall.feedShop.event.domain.enums.EventStatus.ONGOING)
                 .title("테스트 이벤트")
                 .description("테스트 이벤트 설명")
                 .purchaseStartDate(LocalDate.now().plusDays(5))

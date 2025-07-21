@@ -15,9 +15,7 @@ public class EventValidator {
             throw new EventException.InvalidEventTypeException();
         }
         
-        if (requestDto.getStatus() == null) {
-            throw new EventException.InvalidEventStatusException();
-        }
+        // status는 자동 계산되므로 검증 제거
         
         if (requestDto.getTitle() == null || requestDto.getTitle().trim().isEmpty()) {
             throw new IllegalArgumentException("이벤트 제목은 필수입니다.");
