@@ -70,13 +70,17 @@ jobs:
 
       - name: Analyze with SonarQube
         run: |
-          ./gradlew sonar \
-            -Dsonar.qualitygate.wait=false \
-            -Dsonar.projectKey=ECommerceCommunity_FeedShop_Backend \
-            -Dsonar.organization=ecommercecommunity \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
+            ./gradlew sonar \
+              -Dsonar.qualitygate.wait=false \
+              -Dsonar.projectKey=ECommerceCommunity_FeedShop_Backend \
+              -Dsonar.organization=ecommercecommunity \
+              -Dsonar.host.url=https://sonarcloud.io \
+              -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+              -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
+              -Dsonar.pullrequest.branch=${{ github.head_ref }} \
+              -Dsonar.pullrequest.base=${{ github.base_ref }} \
+              -Dsonar.scm.revision=${{ github.event.pull_request.head.sha }}
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            JWT_SECRET: ${{ secrets.JWT_SECRET }}
+            APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
