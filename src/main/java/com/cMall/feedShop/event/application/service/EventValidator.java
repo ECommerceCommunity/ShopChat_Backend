@@ -1,7 +1,8 @@
 package com.cMall.feedShop.event.application.service;
 
 import com.cMall.feedShop.event.application.dto.request.EventCreateRequestDto;
-import com.cMall.feedShop.event.application.exception.EventException;
+import com.cMall.feedShop.event.application.exception.InvalidEventTypeException;
+import com.cMall.feedShop.event.application.exception.InvalidEventStatusException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -12,12 +13,10 @@ public class EventValidator {
      */
     public void validateEventCreateRequest(EventCreateRequestDto requestDto) {
         if (requestDto.getType() == null) {
-            throw new EventException.InvalidEventTypeException();
+            throw new InvalidEventTypeException();
         }
         
-        if (requestDto.getStatus() == null) {
-            throw new EventException.InvalidEventStatusException();
-        }
+        // status는 자동 계산되므로 검증 제거
         
         if (requestDto.getTitle() == null || requestDto.getTitle().trim().isEmpty()) {
             throw new IllegalArgumentException("이벤트 제목은 필수입니다.");

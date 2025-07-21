@@ -1,7 +1,8 @@
 package com.cMall.feedShop.event.application.service;
 
 import com.cMall.feedShop.event.application.dto.request.EventCreateRequestDto;
-import com.cMall.feedShop.event.application.exception.EventException;
+import com.cMall.feedShop.event.application.exception.InvalidEventTypeException;
+import com.cMall.feedShop.event.application.exception.InvalidEventStatusException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,23 +53,10 @@ class EventValidatorTest {
 
         // When & Then
         assertThatThrownBy(() -> eventValidator.validateEventCreateRequest(validRequestDto))
-                .isInstanceOf(EventException.InvalidEventTypeException.class);
+                .isInstanceOf(InvalidEventTypeException.class);
     }
 
-    @Test
-    @DisplayName("이벤트 상태가 null인 경우 예외 발생")
-    void validateEventCreateRequest_NullStatus() {
-        // Given
-        validRequestDto = EventCreateRequestDto.builder()
-                .type(com.cMall.feedShop.event.domain.enums.EventType.BATTLE)
-                .title("테스트 이벤트")
-                .description("테스트 이벤트 설명")
-                .build();
 
-        // When & Then
-        assertThatThrownBy(() -> eventValidator.validateEventCreateRequest(validRequestDto))
-                .isInstanceOf(EventException.InvalidEventStatusException.class);
-    }
 
     @Test
     @DisplayName("제목이 null인 경우 예외 발생")
