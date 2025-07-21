@@ -1,8 +1,6 @@
 name: Spring Boot CI Pipeline
 
 on:
-  push:
-    branches: [ "main", "develop" ]
   pull_request:
     branches: [ "main", "develop" ]
 
@@ -35,7 +33,7 @@ jobs:
         env:
           SPRING_PROFILES_ACTIVE: test
           APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
 
       - name: Generate Test Coverage Report
         run: ./gradlew jacocoTestReport
@@ -60,15 +58,39 @@ jobs:
           name: test-coverage
           path: build/reports/jacoco/test/jacocoTestReport.xml
 
-      - name: Analyze with SonarQube
-        if: github.event_name == 'pull_request' || github.event_name == 'push'
+      - name: Debug SONAR_TOKEN
         run: |
-          ./gradlew sonarqube \
-          -Dsonar.projectKey=ECommerceCommunity_FeedShop_Backend \
-          -Dsonar.projectName="FeedShop_Backend" \
-          -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
-          -Dsonar.organization=ecommercecommunity
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "SONAR_TOKEN is not set"
+          else
+            echo "SONAR_TOKEN is set (length: ${#SONAR_TOKEN})"
+          fi
         env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Debug SonarQube Properties
+        run: |
+          echo "Debugging SonarQube Properties:"
+          echo "sonar.projectKey: ECommerceCommunity_FeedShop_Backend" # 직접 입력된 값
+          echo "sonar.organization: ecommercecommunity" # 직접 입력된 값
+          echo "sonar.pullrequest.key: ${{ github.event.pull_request.number }}"
+          echo "sonar.pullrequest.branch: ${{ github.head_ref }}"
+          echo "sonar.pullrequest.base: ${{ github.base_ref }}"
+          echo "sonar.scm.revision: ${{ github.event.pull_request.head.sha }}"
+
+      - name: Analyze with SonarQube
+        run: |
+          ./gradlew sonar \
+            -Dsonar.qualitygate.wait=false \
+            -Dsonar.projectKey=ECommerceCommunity_FeedShop_Backend \
+            -Dsonar.organization=ecommercecommunity \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
+            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
+            -Dsonar.pullrequest.base=${{ github.base_ref }} \
+            -Dsonar.scm.revision=${{ github.event.pull_request.head.sha }}
+          env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           APP_VERIFICATION_URL: ${{ secrets.APP_VERIFICATION_URL }}
