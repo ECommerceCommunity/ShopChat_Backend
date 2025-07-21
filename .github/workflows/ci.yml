@@ -68,16 +68,6 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Debug SonarQube Properties
-        run: |
-          echo "Debugging SonarQube Properties:"
-          echo "sonar.projectKey: ECommerceCommunity_FeedShop_Backend" # 직접 입력된 값
-          echo "sonar.organization: ecommercecommunity" # 직접 입력된 값
-          echo "sonar.pullrequest.key: ${{ github.event.pull_request.number }}"
-          echo "sonar.pullrequest.branch: ${{ github.head_ref }}"
-          echo "sonar.pullrequest.base: ${{ github.base_ref }}"
-          echo "sonar.scm.revision: ${{ github.event.pull_request.head.sha }}"
-
       - name: Analyze with SonarQube
         run: |
           ./gradlew sonar \
