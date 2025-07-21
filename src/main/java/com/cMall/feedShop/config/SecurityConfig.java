@@ -1,4 +1,3 @@
-
 package com.cMall.feedShop.config;
 
 import com.cMall.feedShop.user.infrastructure.security.JwtAuthenticationFilter;
@@ -41,17 +40,17 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // 예외 처리 (인증되지 않은 사용자가 보호된 리소스에 접근 시 처리)
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         // 인증되지 않은 사용자가 접근 시 HTTP 401 Unauthorized 응답을 반환하도록 설정
                         // React는 이 401 응답을 받아서 자체적으로 로그인 페이지로 리다이렉트하거나 메시지를 표시합니다.
-                   .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
+
                 .authorizeHttpRequests(auth -> auth
-                    .requestMatchers(HttpMethod.POST, "/api/events").hasRole("ADMIN")
+                //    .requestMatchers(HttpMethod.POST, "/api/events").hasRole("ADMIN")
                     .requestMatchers(
                       "/api/auth/login",
                       "/api/auth/signup",
@@ -64,6 +63,8 @@ public class SecurityConfig {
                       "/api/products/**", // 현재 브랜치에 있던 내용
                       "/api/events",
                       "/api/events/**"
+                      "/api/products",
+                      "/api/products/**", "/api/events", "/api/events/**"
                     ).permitAll()
                     .requestMatchers("/api/users/admin/**").hasRole("ADMIN")
                     .requestMatchers("/api/seller/**").hasRole("SELLER")
@@ -91,6 +92,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-
-
 }
