@@ -1,64 +1,21 @@
-// 이벤트 관련 비즈니스 로직을 담당하는 서비스 클래스
 package com.cMall.feedShop.event.application.service;
 
-import com.cMall.feedShop.event.application.dto.request.EventListRequestDto;
-import com.cMall.feedShop.event.application.dto.response.EventListResponseDto;
 import com.cMall.feedShop.event.application.dto.response.EventSummaryDto;
 import com.cMall.feedShop.event.domain.Event;
 import com.cMall.feedShop.event.domain.EventDetail;
-import com.cMall.feedShop.event.domain.EventReward;
-import com.cMall.feedShop.event.domain.repository.EventRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
-@Service
-@RequiredArgsConstructor
-public class EventService {
-    private final EventRepository eventRepository;
+@Component
+public class EventMapper {
 
-    // 전체 조회 (페이징)
-    public EventListResponseDto getAllEvents(Integer page, Integer size) {
-        Pageable pageable = PageRequest.of(page != null ? page - 1 : 0, size != null ? size : 20);
-        Page<Event> eventPage = eventRepository.findAll(pageable);
-        List<EventSummaryDto> content = eventPage.getContent().stream()
-                .map(this::toSummaryDto)
-                .toList();
-        return EventListResponseDto.builder()
-                .content(content)
-                .page(pageable.getPageNumber() + 1)
-                .size(pageable.getPageSize())
-                .totalElements(eventPage.getTotalElements())
-                .totalPages(eventPage.getTotalPages())
-                .build();
-    }
-
-    // 검색 (조건 기반, QueryDSL)
-    public EventListResponseDto searchEvents(EventListRequestDto requestDto) {
-        int page = requestDto.getPage() != null ? requestDto.getPage() - 1 : 0;
-        int size = requestDto.getSize() != null ? requestDto.getSize() : 20;
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Event> eventPage = eventRepository.searchEvents(requestDto, pageable);
-        List<EventSummaryDto> content = eventPage.getContent().stream()
-                .map(this::toSummaryDto)
-                .toList();
-        return EventListResponseDto.builder()
-                .content(content)
-                .page(page + 1)
-                .size(size)
-                .totalElements(eventPage.getTotalElements())
-                .totalPages(eventPage.getTotalPages())
-                .build();
-    }
-
-    // Entity → DTO 변환 (간단 버전)
-    private EventSummaryDto toSummaryDto(Event event) {
+    /**
+     * Entity → DTO 변환 (간단 버전)
+     */
+    public EventSummaryDto toSummaryDto(Event event) {
         EventDetail detail = event.getEventDetail();
         
         return EventSummaryDto.builder()
