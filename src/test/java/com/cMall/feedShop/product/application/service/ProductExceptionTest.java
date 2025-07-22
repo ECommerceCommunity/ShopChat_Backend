@@ -2,8 +2,8 @@ package com.cMall.feedShop.product.application.service;
 
 import com.cMall.feedShop.common.exception.BusinessException;
 import com.cMall.feedShop.common.exception.ErrorCode;
-import com.cMall.feedShop.product.application.exception.ProductException;
-import com.cMall.feedShop.store.application.exception.StoreException;
+import com.cMall.feedShop.product.domain.exception.ProductException;
+import com.cMall.feedShop.store.domain.exception.StoreException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

@@ -1,4 +1,4 @@
-package com.cMall.feedShop.product.application.exception;
+package com.cMall.feedShop.product.domain.exception;
 
 import com.cMall.feedShop.common.exception.BusinessException;
 import com.cMall.feedShop.common.exception.ErrorCode;

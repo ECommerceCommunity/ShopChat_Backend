@@ -1,4 +1,4 @@
-package com.cMall.feedShop.product.application.dto;
+package com.cMall.feedShop.product.application.dto.common;
 
 import com.cMall.feedShop.product.domain.enums.ImageType;
 import com.cMall.feedShop.product.domain.model.ProductImage;

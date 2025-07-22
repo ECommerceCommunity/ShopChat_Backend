@@ -50,7 +50,8 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                //    .requestMatchers(HttpMethod.POST, "/api/events").hasRole("ADMIN")
+                    // 이벤트 생성(POST)은 ADMIN만, 나머지 조회는 모두 permitAll
+                    .requestMatchers(HttpMethod.POST, "/api/events").hasRole("ADMIN")
                     .requestMatchers(
                       "/api/auth/login",
                       "/api/auth/signup",
@@ -62,7 +63,9 @@ public class SecurityConfig {
                       "/api/products",
                       "/api/products/**",
                       "/api/events",
-                      "/api/events/**"
+                      "/api/events/**",
+                      "/api/reviews/products/**",
+                      "/api/reviews/{reviewId}"
                     ).permitAll()
                     .requestMatchers("/api/users/admin/**").hasRole("ADMIN")
                     .requestMatchers("/api/seller/**").hasRole("SELLER")

@@ -1,13 +1,11 @@
 package com.cMall.feedShop.cart.domain.model;
 
-import com.cMall.feedShop.cart.application.exception.CartException;
+import com.cMall.feedShop.cart.domain.exception.CartException;
 import com.cMall.feedShop.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "cart_items")
@@ -29,6 +27,9 @@ public class CartItem extends BaseTimeEntity {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
+    @Column(name = "selected", nullable = false, columnDefinition = "boolean default true")
+    private Boolean selected;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
@@ -39,6 +40,7 @@ public class CartItem extends BaseTimeEntity {
         this.optionId = optionId;
         this.imageId = imageId;
         this.quantity = quantity;
+        this.selected = true;
     }
 
     public void updateQuantity(Integer newQuantity) {
