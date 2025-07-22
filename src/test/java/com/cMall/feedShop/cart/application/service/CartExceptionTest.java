@@ -1,6 +1,6 @@
 package com.cMall.feedShop.cart.application.service;
 
-import com.cMall.feedShop.cart.application.exception.CartException;
+import com.cMall.feedShop.cart.domain.exception.CartException;
 import com.cMall.feedShop.common.exception.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

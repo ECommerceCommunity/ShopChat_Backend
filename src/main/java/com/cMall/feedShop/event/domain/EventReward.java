@@ -5,12 +5,15 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import com.cMall.feedShop.common.BaseTimeEntity;
 
 @Entity
 @Table(name = "event_rewards")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class EventReward {
+@AllArgsConstructor
+@Builder
+public class EventReward extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,11 +47,8 @@ public class EventReward {
     @Column(name = "max_recipients")
     private Integer maxRecipients;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = LocalDateTime.now();
+    // 연관관계 설정 메서드
+    public void setEvent(Event event) {
+        this.event = event;
     }
 }

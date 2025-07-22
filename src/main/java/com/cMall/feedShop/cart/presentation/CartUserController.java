@@ -1,6 +1,7 @@
 package com.cMall.feedShop.cart.presentation;
 
 import com.cMall.feedShop.cart.application.dto.request.CartItemCreateRequest;
+import com.cMall.feedShop.cart.application.dto.response.CartItemListResponse;
 import com.cMall.feedShop.cart.application.dto.response.CartItemResponse;
 import com.cMall.feedShop.cart.application.service.CartService;
 import com.cMall.feedShop.common.aop.ApiResponseFormat;
@@ -9,10 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
@@ -31,6 +29,19 @@ public class CartUserController {
             @Valid @RequestBody CartItemCreateRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
         CartItemResponse data = cartService.addCartItem(request, userDetails);
+        return ApiResponse.success(data);
+    }
+
+    /**
+     * 장바구니 목록 조회
+     * GET /api/users/cart
+     */
+    @GetMapping("/cart")
+    @ApiResponseFormat(message = "장바구니 목록을 성공적으로 조회했습니다.")
+    public ApiResponse<CartItemListResponse> getCartItems(
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        CartItemListResponse data = cartService.getCartItems(userDetails);
         return ApiResponse.success(data);
     }
 }
