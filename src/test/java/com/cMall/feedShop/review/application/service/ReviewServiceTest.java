@@ -5,7 +5,7 @@ import com.cMall.feedShop.review.application.dto.request.ReviewCreateRequest;
 import com.cMall.feedShop.review.application.dto.response.ReviewCreateResponse;
 import com.cMall.feedShop.review.application.dto.response.ReviewListResponse;
 import com.cMall.feedShop.review.application.dto.response.ReviewResponse;
-import com.cMall.feedShop.review.application.exception.ReviewException;
+import com.cMall.feedShop.review.domain.exception.ReviewNotFoundException;
 import com.cMall.feedShop.review.domain.Review;
 import com.cMall.feedShop.review.domain.enums.Cushion;
 import com.cMall.feedShop.review.domain.enums.SizeFit;
@@ -186,7 +186,7 @@ class ReviewServiceTest {
 
         // when & then
         assertThatThrownBy(() -> reviewService.getReview(999L))
-                .isInstanceOf(ReviewException.ReviewNotFoundException.class)
+                .isInstanceOf(ReviewNotFoundException.class)
                 .hasMessageContaining("리뷰를 찾을 수 없습니다");
     }
 

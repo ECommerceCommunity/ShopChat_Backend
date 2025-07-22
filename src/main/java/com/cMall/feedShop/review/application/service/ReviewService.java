@@ -6,7 +6,7 @@ import com.cMall.feedShop.review.application.dto.request.ReviewCreateRequest;
 import com.cMall.feedShop.review.application.dto.response.ReviewCreateResponse;
 import com.cMall.feedShop.review.application.dto.response.ReviewListResponse;
 import com.cMall.feedShop.review.application.dto.response.ReviewResponse;
-import com.cMall.feedShop.review.application.exception.ReviewException;
+import com.cMall.feedShop.review.domain.exception.ReviewNotFoundException;
 import com.cMall.feedShop.review.domain.Review;
 import com.cMall.feedShop.review.domain.repository.ReviewRepository;
 import com.cMall.feedShop.user.domain.model.User;
@@ -94,10 +94,10 @@ public class ReviewService {
         log.info("리뷰 상세 조회: ID={}", reviewId);
 
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new ReviewException.ReviewNotFoundException("ID " + reviewId + "에 해당하는 리뷰를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ReviewNotFoundException("ID " + reviewId + "에 해당하는 리뷰를 찾을 수 없습니다."));
 
         if (!review.isActive()) {
-            throw new ReviewException.ReviewNotFoundException("삭제되었거나 숨김 처리된 리뷰입니다.");
+            throw new ReviewNotFoundException("삭제되었거나 숨김 처리된 리뷰입니다.");
         }
 
         return ReviewResponse.from(review);
