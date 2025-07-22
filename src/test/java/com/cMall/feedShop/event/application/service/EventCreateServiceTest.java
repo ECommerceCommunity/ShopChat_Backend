@@ -2,7 +2,7 @@ package com.cMall.feedShop.event.application.service;
 
 import com.cMall.feedShop.event.application.dto.request.EventCreateRequestDto;
 import com.cMall.feedShop.event.application.dto.response.EventCreateResponseDto;
-import com.cMall.feedShop.event.application.exception.EventException;
+import com.cMall.feedShop.event.application.exception.InvalidEventTypeException;
 import com.cMall.feedShop.event.domain.Event;
 import com.cMall.feedShop.event.domain.EventDetail;
 import com.cMall.feedShop.event.domain.enums.EventStatus;
@@ -100,12 +100,12 @@ class EventCreateServiceTest {
     @DisplayName("검증 실패 시 예외 발생")
     void createEvent_ValidationFailure() {
         // Given
-        doThrow(new EventException.InvalidEventTypeException())
+        doThrow(new InvalidEventTypeException())
                 .when(eventValidator).validateEventCreateRequest(validRequestDto);
 
         // When & Then
         assertThatThrownBy(() -> eventCreateService.createEvent(validRequestDto))
-                .isInstanceOf(EventException.InvalidEventTypeException.class);
+                .isInstanceOf(InvalidEventTypeException.class);
     }
 
     @Test

@@ -2,7 +2,6 @@ package com.cMall.feedShop.event.application.service;
 
 import com.cMall.feedShop.event.application.dto.request.EventCreateRequestDto;
 import com.cMall.feedShop.event.application.dto.response.EventCreateResponseDto;
-import com.cMall.feedShop.event.application.exception.EventException;
 import com.cMall.feedShop.event.domain.Event;
 import com.cMall.feedShop.event.domain.EventDetail;
 import com.cMall.feedShop.event.domain.enums.EventStatus;
