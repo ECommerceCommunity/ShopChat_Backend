@@ -4,6 +4,7 @@ import com.cMall.feedShop.event.application.dto.request.EventListRequestDto;
 import com.cMall.feedShop.event.application.dto.response.EventListResponseDto;
 import com.cMall.feedShop.event.application.dto.response.EventSummaryDto;
 import com.cMall.feedShop.event.application.dto.response.EventDetailResponseDto;
+import com.cMall.feedShop.event.application.exception.EventNotFoundException;
 import com.cMall.feedShop.event.domain.Event;
 import com.cMall.feedShop.event.domain.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
@@ -64,7 +65,7 @@ public class EventReadService {
 
     public EventDetailResponseDto getEventDetail(Long eventId) {
         Event event = eventRepository.findDetailById(eventId)
-                .orElseThrow(() -> new RuntimeException("이벤트를 찾을 수 없습니다.")); // Exception은 다음 단계에서 커스텀 처리
+                .orElseThrow(() -> new EventNotFoundException(eventId));
         return eventMapper.toDetailDto(event);
     }
 } 
