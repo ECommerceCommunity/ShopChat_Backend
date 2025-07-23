@@ -55,6 +55,7 @@ public class SecurityConfig {
                       "/api/auth/login",
                       "/api/auth/signup",
                       "/api/auth/verify-email",
+                      "/api/auth/find-account",
                       "/public/**",
                       "/swagger-ui/**",
                       "/v3/api-docs/**",
@@ -68,6 +69,7 @@ public class SecurityConfig {
                     ).permitAll()
                     .requestMatchers("/api/users/admin/**").hasRole("ADMIN")
                     .requestMatchers("/api/seller/**").hasRole("SELLER")
+                    .requestMatchers("/actuator/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
                 )
                 // 폼 로그인 및 HTTP Basic 인증은 사용하지 않음
