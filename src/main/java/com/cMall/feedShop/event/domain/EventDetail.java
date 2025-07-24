@@ -58,4 +58,7 @@ public class EventDetail extends BaseTimeEntity {
     @Column(name = "rewards", columnDefinition = "TEXT")
     private String rewards;
 
+    public void setEvent(Event event) {
+        this.event = event;
+    }
 }
