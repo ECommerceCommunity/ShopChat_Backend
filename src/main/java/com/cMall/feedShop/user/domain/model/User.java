@@ -120,9 +120,4 @@ public class User extends BaseTimeEntity implements UserDetails {
         return this.status == UserStatus.ACTIVE;
     }
 
-    // canLogin() 메서드는 UserDetails의 isEnabled()와 역할이 중복되거나 유사할 수 있으므로
-    // UserDetails의 isEnabled()를 사용하는 것을 권장합니다.
-    // public boolean canLogin() {
-    //     return status == UserStatus.ACTIVE;
-    // }
 }

@@ -48,7 +48,7 @@ class UserServiceTest {
     private EmailService emailService;
 
     @InjectMocks
-    private UserService userService; // 테스트 대상 서비스
+    private UserServiceImpl userService; // 테스트 대상 서비스
 
     private UserSignUpRequest signUpRequest;
 
