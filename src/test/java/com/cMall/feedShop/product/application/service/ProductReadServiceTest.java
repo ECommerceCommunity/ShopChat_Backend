@@ -2,7 +2,7 @@ package com.cMall.feedShop.product.application.service;
 
 import com.cMall.feedShop.product.application.dto.response.ProductDetailResponse;
 import com.cMall.feedShop.product.application.dto.response.ProductPageResponse;
-import com.cMall.feedShop.product.application.exception.ProductException;
+import com.cMall.feedShop.product.domain.exception.ProductException;
 import com.cMall.feedShop.product.application.util.DiscountCalculator;
 import com.cMall.feedShop.product.domain.enums.*;
 import com.cMall.feedShop.product.domain.model.Category;

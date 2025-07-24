@@ -1,6 +1,6 @@
 package com.cMall.feedShop.cart.application.service;
 
-import com.cMall.feedShop.cart.application.exception.CartException;
+import com.cMall.feedShop.cart.domain.exception.CartException;
 import com.cMall.feedShop.cart.domain.model.Cart;
 import com.cMall.feedShop.cart.domain.model.CartItem;
 import com.cMall.feedShop.user.domain.enums.UserRole;

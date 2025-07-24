@@ -5,6 +5,7 @@ import com.cMall.feedShop.common.exception.ErrorCode;
 import com.cMall.feedShop.user.application.dto.request.UserLoginRequest;
 import com.cMall.feedShop.user.application.dto.response.UserLoginResponse;
 import com.cMall.feedShop.user.domain.enums.UserRole;
+import com.cMall.feedShop.user.domain.enums.UserStatus;
 import com.cMall.feedShop.user.domain.model.User;
 import com.cMall.feedShop.user.domain.repository.UserRepository;
 import com.cMall.feedShop.user.infrastructure.security.JwtTokenProvider;
@@ -70,6 +71,7 @@ class UserAuthServiceTest {
         );
         // 테스트 객체 생성 시에는 생략하거나 mock 데이터를 직접 설정
         testUser.setId(1L);
+        testUser.setStatus(UserStatus.ACTIVE); // 사용자 활성화
         ReflectionTestUtils.setField(testUser, "createdAt", LocalDateTime.now());
         ReflectionTestUtils.setField(testUser, "updatedAt", LocalDateTime.now());
         testUser.setPasswordChangedAt(LocalDateTime.now());

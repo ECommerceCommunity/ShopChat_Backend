@@ -21,6 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpMethod;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,19 +50,26 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
+                //    .requestMatchers(HttpMethod.POST, "/api/events").hasRole("ADMIN")
                     .requestMatchers(
                       "/api/auth/login",
                       "/api/auth/signup",
-                      "/api/auth/verify-email", // develop 브랜치에 있던 내용
+                      "/api/auth/verify-email",
+                      "/api/auth/find-account",
                       "/public/**",
                       "/swagger-ui/**",
                       "/v3/api-docs/**",
                       "/swagger-resources/**",
-                      "/api/products",
-                      "/api/products/**", "/api/events", "/api/events/**"
+
+                      "/api/products", // 현재 브랜치에 있던 내용
+                      "/api/products/**", // 현재 브랜치에 있던 내용
+                      "/api/events", "/api/events/**",
+                      "/api/reviews/products/**","/api/reviews/{reviewId}"
+
                     ).permitAll()
                     .requestMatchers("/api/users/admin/**").hasRole("ADMIN")
                     .requestMatchers("/api/seller/**").hasRole("SELLER")
+                    .requestMatchers("/actuator/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
                 )
                 // 폼 로그인 및 HTTP Basic 인증은 사용하지 않음

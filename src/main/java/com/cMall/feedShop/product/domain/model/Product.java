@@ -1,7 +1,6 @@
 package com.cMall.feedShop.product.domain.model;
 
 import com.cMall.feedShop.common.BaseTimeEntity;
-import com.cMall.feedShop.product.application.exception.ProductException;
 import com.cMall.feedShop.product.application.util.DiscountCalculator;
 import com.cMall.feedShop.product.domain.enums.DiscountType;
 import com.cMall.feedShop.product.domain.enums.ImageType;
@@ -10,10 +9,8 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
