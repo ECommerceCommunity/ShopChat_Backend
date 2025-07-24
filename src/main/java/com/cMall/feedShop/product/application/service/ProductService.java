@@ -7,7 +7,7 @@ import com.cMall.feedShop.product.application.dto.request.ProductImageRequest;
 import com.cMall.feedShop.product.application.dto.request.ProductOptionRequest;
 import com.cMall.feedShop.product.application.dto.request.ProductUpdateRequest;
 import com.cMall.feedShop.product.application.dto.response.ProductCreateResponse;
-import com.cMall.feedShop.product.application.exception.ProductException;
+import com.cMall.feedShop.product.domain.exception.ProductException;
 import com.cMall.feedShop.product.domain.model.Category;
 import com.cMall.feedShop.product.domain.model.Product;
 import com.cMall.feedShop.product.domain.model.ProductImage;
@@ -16,11 +16,12 @@ import com.cMall.feedShop.product.domain.repository.CategoryRepository;
 import com.cMall.feedShop.product.domain.repository.ProductImageRepository;
 import com.cMall.feedShop.product.domain.repository.ProductOptionRepository;
 import com.cMall.feedShop.product.domain.repository.ProductRepository;
-import com.cMall.feedShop.store.application.exception.StoreException;
+import com.cMall.feedShop.store.domain.exception.StoreException;
 import com.cMall.feedShop.store.domain.model.Store;
 import com.cMall.feedShop.store.domain.repository.StoreRepository;
 import com.cMall.feedShop.user.domain.enums.UserRole;
 import com.cMall.feedShop.user.domain.exception.UserException;
+import com.cMall.feedShop.user.domain.exception.UserNotFoundException;
 import com.cMall.feedShop.user.domain.model.User;
 import com.cMall.feedShop.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -147,7 +148,7 @@ public class ProductService {
     private Long getCurrentUserId(UserDetails userDetails) {
         String login_id = userDetails.getUsername();
         User user = userRepository.findByLoginId(login_id)
-                .orElseThrow(() -> new UserException.UserNotFoundException());
+                .orElseThrow(() -> new UserNotFoundException());
 
         return user.getId();
     }
@@ -157,7 +158,7 @@ public class ProductService {
         // 사용자가 SELLER 권한을 가지고 있는지 확인
         // UserRepository 에서 사용자 조회 후 role 확인
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserException.UserNotFoundException());
+                .orElseThrow(() -> new UserNotFoundException());
 
         if (user.getRole() != UserRole.SELLER) {
             throw new BusinessException(ErrorCode.FORBIDDEN);
