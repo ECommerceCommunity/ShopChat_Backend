@@ -37,6 +37,7 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
         QEventDetail detail = QEventDetail.eventDetail;
 
         BooleanBuilder builder = new BooleanBuilder();
+        builder.and(event.deletedAt.isNull()); // 소프트 딜리트 제외
         if (StringUtils.hasText(requestDto.getStatus()) && !"all".equalsIgnoreCase(requestDto.getStatus())) {
             builder.and(event.status.eq(EventStatus.valueOf(requestDto.getStatus().toUpperCase())));
         }
@@ -86,7 +87,7 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
                 .leftJoin(event.eventDetail, detail).fetchJoin()
                 .leftJoin(event.rewards, reward).fetchJoin()
                 .leftJoin(reward.rewardType, rewardType).fetchJoin()
-                .where(event.id.eq(id))
+                .where(event.id.eq(id).and(event.deletedAt.isNull())) // 소프트 딜리트 제외
                 .fetchOne();
         return Optional.ofNullable(result);
     }
