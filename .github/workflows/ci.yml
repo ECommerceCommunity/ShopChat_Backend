@@ -73,6 +73,17 @@ jobs:
       #   env:
       #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+      # SonarCloud Organization secret이 올바르게 설정되었는지 확인하는 디버그 스텝 추가
+      - name: Debug SonarCloud Organization
+        run: |
+          if [ -z "${{ secrets.SONAR_ORGANIZATION }}" ]; then
+            echo "SONAR_ORGANIZATION secret is NOT set or is empty!"
+          else
+            echo "SONAR_ORGANIZATION secret is set (length: ${{ secrets.SONAR_ORGANIZATION_LENGTH }})"
+          fi
+        env:
+          SONAR_ORGANIZATION_LENGTH: ${{ secrets.SONAR_ORGANIZATION && secrets.SONAR_ORGANIZATION.length || 0 }}
+
       - name: Analyze with SonarCloud
         run: |
           SONAR_PARAMS=""
@@ -81,7 +92,7 @@ jobs:
           elif [[ "${{ github.event_name }}" == "push" ]]; then
             SONAR_PARAMS="-Dsonar.branch.name=${{ github.ref_name }}"
           fi
-      
+          
           ./gradlew sonar \
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
