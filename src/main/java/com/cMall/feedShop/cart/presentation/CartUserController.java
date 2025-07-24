@@ -1,6 +1,7 @@
 package com.cMall.feedShop.cart.presentation;
 
 import com.cMall.feedShop.cart.application.dto.request.CartItemCreateRequest;
+import com.cMall.feedShop.cart.application.dto.request.CartItemUpdateRequest;
 import com.cMall.feedShop.cart.application.dto.response.CartItemListResponse;
 import com.cMall.feedShop.cart.application.dto.response.CartItemResponse;
 import com.cMall.feedShop.cart.application.service.CartService;
@@ -43,5 +44,20 @@ public class CartUserController {
     ) {
         CartItemListResponse data = cartService.getCartItems(userDetails);
         return ApiResponse.success(data);
+    }
+
+    /**
+     * 장바구니 아이템 수정 (수량/선택 상태 변경)
+     * PATCH /api/users/cart/items/{cartItemId}
+     */
+    @PatchMapping("/cart/items/{cartItemId}")
+    @ApiResponseFormat(message = "장바구니 아이템이 성공적으로 수정되었습니다.")
+    public ApiResponse<Void> updateCartItem(
+            @PathVariable Long cartItemId,
+            @Valid @RequestBody CartItemUpdateRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        cartService.updateCartItem(cartItemId, request, userDetails);
+        return ApiResponse.success(null);
     }
 }
