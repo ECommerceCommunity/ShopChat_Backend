@@ -40,6 +40,7 @@ public enum ErrorCode {
 
     // 장바구니
     ZERO_QUANTITY(400, "CA001", "수량은 1개 이상이어야 합니다."),
+    CART_ITEM_NOT_FOUND(404, "CA002", "장바구니 아이템을 찾을 수 없습니다."),
 
     // 주문
     ORDER_NOT_FOUND(404, "O001", "주문을 찾을 수 없습니다."),
