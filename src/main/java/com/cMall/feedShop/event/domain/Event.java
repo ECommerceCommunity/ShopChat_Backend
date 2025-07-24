@@ -41,6 +41,13 @@ public class Event extends BaseTimeEntity {
     @Column(name = "updated_by")
     private LocalDateTime updatedBy;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User createdUser;
