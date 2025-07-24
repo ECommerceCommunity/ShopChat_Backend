@@ -1,6 +1,7 @@
 package com.cMall.feedShop.event.application.service;
 
 import com.cMall.feedShop.event.application.dto.request.EventUpdateRequestDto;
+import com.cMall.feedShop.event.application.exception.EventNotFoundException;
 import com.cMall.feedShop.event.domain.Event;
 import com.cMall.feedShop.event.domain.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class EventUpdateService {
     @Transactional
     public void updateEvent(EventUpdateRequestDto dto) {
         Event event = eventRepository.findDetailById(dto.getEventId())
-                .orElseThrow(() -> new RuntimeException("이벤트를 찾을 수 없습니다.")); // 예외는 다음 단계에서 커스텀 처리 예정
+                .orElseThrow(() -> new EventNotFoundException(dto.getEventId()));
         event.updateFromDto(dto);
         eventRepository.save(event);
     }
