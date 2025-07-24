@@ -4,6 +4,8 @@ import com.cMall.feedShop.common.dto.ApiResponse;
 import com.cMall.feedShop.event.application.dto.request.EventCreateRequestDto;
 import com.cMall.feedShop.event.application.dto.response.EventCreateResponseDto;
 import com.cMall.feedShop.event.application.service.EventCreateService;
+import com.cMall.feedShop.event.application.dto.request.EventUpdateRequestDto;
+import com.cMall.feedShop.event.application.service.EventUpdateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class EventCreateController {
     private final EventCreateService eventCreateService;
+    private final EventUpdateService eventUpdateService;
 
     /**
      * 이벤트 생성
