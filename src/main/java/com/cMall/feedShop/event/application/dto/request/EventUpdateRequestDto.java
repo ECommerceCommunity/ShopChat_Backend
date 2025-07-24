@@ -24,4 +24,8 @@ public class EventUpdateRequestDto {
     private String imageUrl;
     private String precautions;
     private String rewards;
+
+    public void setEventId(Long eventId) {
+        this.eventId = eventId;
+    }
 } 
