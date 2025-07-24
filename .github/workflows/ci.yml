@@ -75,21 +75,22 @@ jobs:
 
       - name: Analyze with SonarCloud
         run: |
+          SONAR_PARAMS=""
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            SONAR_PARAMS="-Dsonar.pullrequest.key=${{ github.event.pull_request.number }} -Dsonar.pullrequest.branch=${{ github.head_ref }} -Dsonar.pullrequest.base=${{ github.base_ref }}"
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            SONAR_PARAMS="-Dsonar.branch.name=${{ github.ref_name }}"
+          fi
+      
           ./gradlew sonar \
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
             -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.scm.provider=git \ # Git SCM 사용 명시
+            -Dsonar.scm.provider=git \
             -Dsonar.java.binaries=build/classes/java/main \
             -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml \
-            -Dsonar.junit.reportPaths=build/test-results/test
-          
-          # 브랜치 유형에 따라 적절한 파라미터 전달
-          # PR 이벤트인 경우
-          ${{ github.event_name == 'pull_request' && format(' -Dsonar.pullrequest.key={0} -Dsonar.pullrequest.branch={1} -Dsonar.pullrequest.base={2}', github.event.pull_request.number, github.head_ref, github.base_ref) || '' }} \
-          # Push 이벤트인 경우 (브랜치 이름 전달)
-          ${{ github.event_name == 'push' && format(' -Dsonar.branch.name={0}', github.ref_name) || '' }}
-
+            -Dsonar.junit.reportPaths=build/test-results/test \
+            $SONAR_PARAMS
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
