@@ -39,12 +39,12 @@ public class EventRepositoryImpl implements EventRepository {
 
     @Override
     public List<Event> findAll() {
-        return eventJpaRepository.findAll();
+        return eventJpaRepository.findAllActive();
     }
 
     @Override
     public Page<Event> findAll(Pageable pageable) {
-        return eventJpaRepository.findAll(pageable);
+        return eventJpaRepository.findAllActive(pageable);
     }
 
     @Override
