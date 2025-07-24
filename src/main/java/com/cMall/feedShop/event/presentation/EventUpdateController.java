@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class EventUpdateController {
     private final EventUpdateService eventUpdateService;
+    private final EventDeleteService eventDeleteService;
 
     /**
      * 이벤트 수정
@@ -31,4 +32,5 @@ public class EventUpdateController {
                 .build();
         return ResponseEntity.ok(response);
     }
+
 } 
