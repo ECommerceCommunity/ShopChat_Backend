@@ -53,6 +53,7 @@ public class ReviewController {
             @Parameter(description = "리뷰 ID") @PathVariable Long reviewId) {
         ReviewResponse response = reviewService.getReview(reviewId);
         return com.cMall.feedShop.common.dto.ApiResponse.success(response);
+
     }
 
     @GetMapping("/products/{productId}/statistics")
@@ -70,13 +71,4 @@ public class ReviewController {
         return com.cMall.feedShop.common.dto.ApiResponse.success(response);
     }
 
-    @GetMapping("/products/{productId}/statistics")
-    @ApiResponseFormat(message = "상품 3요소 평가 통계를 성공적으로 조회했습니다.")
-    @Operation(summary = "상품별 3요소 평가 통계 조회",
-            description = "특정 상품의 Cushion, SizeFit, Stability 평가 통계를 조회합니다. 로그인이 필요하지 않습니다.")
-    public ApiResponse<Review3ElementStatisticsResponse> getProductStatistics(
-            @Parameter(description = "상품 ID") @PathVariable Long productId) {
-        Review3ElementStatisticsResponse response = statisticsService.getProductStatistics(productId);
-        return ApiResponse.success(response);
-    }
 }
