@@ -6,6 +6,7 @@ import com.cMall.feedShop.user.domain.model.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import com.cMall.feedShop.common.BaseTimeEntity;
 import java.util.List;
@@ -40,6 +41,13 @@ public class Event extends BaseTimeEntity {
     @Column(name = "updated_by")
     private LocalDateTime updatedBy;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User createdUser;
@@ -62,6 +70,76 @@ public class Event extends BaseTimeEntity {
         this.rewards = rewards;
         if (rewards != null) {
             rewards.forEach(reward -> reward.setEvent(this));
+        }
+    }
+
+    /**
+     * 이벤트 상태를 자동으로 계산하여 업데이트
+     */
+    public void updateStatusAutomatically() {
+        if (eventDetail == null) {
+            return;
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate eventStartDate = eventDetail.getEventStartDate();
+        LocalDate eventEndDate = eventDetail.getEventEndDate();
+
+        if (eventStartDate == null || eventEndDate == null) {
+            return;
+        }
+
+        if (today.isBefore(eventStartDate)) {
+            this.status = EventStatus.UPCOMING;
+        } else if (today.isAfter(eventEndDate)) {
+            this.status = EventStatus.ENDED;
+        } else {
+            this.status = EventStatus.ONGOING;
+        }
+    }
+
+    /**
+     * 현재 상태가 자동 계산된 상태와 일치하는지 확인
+     */
+    public boolean isStatusUpToDate() {
+        EventStatus calculatedStatus = calculateStatus();
+        return this.status == calculatedStatus;
+    }
+
+    /**
+     * 현재 날짜 기준으로 이벤트 상태 계산
+     */
+    public EventStatus calculateStatus() {
+        if (eventDetail == null) {
+            return this.status; // 기존 상태 유지
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate eventStartDate = eventDetail.getEventStartDate();
+        LocalDate eventEndDate = eventDetail.getEventEndDate();
+
+        if (eventStartDate == null || eventEndDate == null) {
+            return this.status; // 기존 상태 유지
+        }
+
+        if (today.isBefore(eventStartDate)) {
+            return EventStatus.UPCOMING;
+        } else if (today.isAfter(eventEndDate)) {
+            return EventStatus.ENDED;
+        } else {
+            return EventStatus.ONGOING;
+        }
+    }
+
+    /**
+     * 이벤트 정보 수정 (빌더 패턴 활용)
+     */
+    public void updateFromDto(com.cMall.feedShop.event.application.dto.request.EventUpdateRequestDto dto) {
+        this.type = dto.getType() != null ? com.cMall.feedShop.event.domain.enums.EventType.valueOf(dto.getType()) : this.type;
+        this.status = dto.getStatus() != null ? com.cMall.feedShop.event.domain.enums.EventStatus.valueOf(dto.getStatus()) : this.status;
+        this.maxParticipants = dto.getMaxParticipants() != null ? dto.getMaxParticipants() : this.maxParticipants;
+        if (this.eventDetail != null) {
+            this.eventDetail.updateFromDto(dto);
         }
     }
 
