@@ -224,7 +224,6 @@ public class CartService {
         // 3. 장바구니 아이템 삭제
         cartItemRepository.delete(cartItem);
     }
-
     private CartItemListResponse calculateCartSummary(List<CartItemInfo> items) {
 
         // 선택된 아이템들만 계산한다. (실제 결제 대상)
