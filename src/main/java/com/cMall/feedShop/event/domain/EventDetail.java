@@ -62,4 +62,22 @@ public class EventDetail extends BaseTimeEntity {
     public void setEvent(Event event) {
         this.event = event;
     }
+
+    /**
+     * 이벤트 상세 정보 수정 (빌더 패턴 활용)
+     */
+    public void updateFromDto(com.cMall.feedShop.event.application.dto.request.EventUpdateRequestDto dto) {
+        this.title = dto.getTitle() != null ? dto.getTitle() : this.title;
+        this.description = dto.getDescription() != null ? dto.getDescription() : this.description;
+        this.purchaseStartDate = dto.getPurchaseStartDate() != null ? dto.getPurchaseStartDate() : this.purchaseStartDate;
+        this.purchaseEndDate = dto.getPurchaseEndDate() != null ? dto.getPurchaseEndDate() : this.purchaseEndDate;
+        this.eventStartDate = dto.getEventStartDate() != null ? dto.getEventStartDate() : this.eventStartDate;
+        this.eventEndDate = dto.getEventEndDate() != null ? dto.getEventEndDate() : this.eventEndDate;
+        this.announcement = dto.getAnnouncementDate() != null ? dto.getAnnouncementDate() : this.announcement;
+        this.participationMethod = dto.getParticipationMethod() != null ? dto.getParticipationMethod() : this.participationMethod;
+        this.selectionCriteria = dto.getSelectionCriteria() != null ? dto.getSelectionCriteria() : this.selectionCriteria;
+        this.imageUrl = dto.getImageUrl() != null ? dto.getImageUrl() : this.imageUrl;
+        this.precautions = dto.getPrecautions() != null ? dto.getPrecautions() : this.precautions;
+        this.rewards = dto.getRewards() != null ? dto.getRewards() : this.rewards;
+    }
 }
