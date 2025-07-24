@@ -48,20 +48,19 @@ public class UserAuthController {
     }
 
     @GetMapping("/find-account")
+    @ApiResponseFormat(message = "계정 조회 처리 완료.")
     public ResponseEntity<ApiResponse<UserResponse>> findAccountByNameAndPhone(
-            @RequestParam("username") String username,
-            @RequestParam("phoneNumber") String phoneNumber
-            ) {
+                                                                                @RequestParam("username") String username,
+                                                                                @RequestParam("phoneNumber") String phoneNumber
+    ) {
         UserResponse account = userService.findByUsernameAndPhoneNumber(username, phoneNumber);
 
         if (account != null) {
-            // 계정을 찾았을 경우: 200 OK 상태 코드와 함께 성공 ApiResponse 반환
-            ApiResponse<UserResponse> response = ApiResponse.success("계정을 성공적으로 찾았습니다.", account);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            // 성공 시 200 OK를 반환합니다.
+            return new ResponseEntity<>(ApiResponse.success("계정을 성공적으로 찾았습니다.", account), HttpStatus.OK);
         } else {
-            // 계정을 찾지 못했을 경우: 404 NOT_FOUND 상태 코드와 함께 오류 ApiResponse 반환
-            ApiResponse<UserResponse> response = ApiResponse.error("해당하는 계정을 찾을 수 없습니다.");
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            // 실패 시 404 NOT_FOUND를 반환합니다.
+            return new ResponseEntity<>(ApiResponse.error("해당하는 계정을 찾을 수 없습니다."), HttpStatus.NOT_FOUND);
         }
     }
 }
