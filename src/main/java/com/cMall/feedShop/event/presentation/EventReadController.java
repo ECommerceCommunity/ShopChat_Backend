@@ -3,8 +3,12 @@ package com.cMall.feedShop.event.presentation;
 import com.cMall.feedShop.event.application.dto.request.EventListRequestDto;
 import com.cMall.feedShop.event.application.dto.response.EventListResponseDto;
 import com.cMall.feedShop.event.application.service.EventReadService;
+import com.cMall.feedShop.common.dto.ApiResponse;
+import com.cMall.feedShop.event.application.dto.response.FeedEventDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/events")
@@ -27,5 +31,18 @@ public class EventReadController {
     @GetMapping("/search")
     public EventListResponseDto searchEvents(@ModelAttribute EventListRequestDto requestDto) {
         return eventReadService.searchEvents(requestDto);
+    }
+
+    /**
+     * 피드 생성용 이벤트 목록 조회 (진행중인 이벤트만)
+     */
+    @GetMapping("/feed-available")
+    public ApiResponse<List<FeedEventDto>> getFeedAvailableEvents() {
+        List<FeedEventDto> events = eventReadService.getFeedAvailableEvents();
+        return ApiResponse.<List<FeedEventDto>>builder()
+                .success(true)
+                .message("피드 생성 가능한 이벤트 목록을 성공적으로 조회했습니다.")
+                .data(events)
+                .build();
     }
 } 
