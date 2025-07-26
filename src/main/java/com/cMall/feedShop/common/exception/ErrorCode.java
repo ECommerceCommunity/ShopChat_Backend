@@ -24,6 +24,7 @@ public enum ErrorCode {
     INVALID_VERIFICATION_TOKEN(400, "U005", "유효하지 않거나 찾을 수 없는 인증 토큰입니다."),
     ACCOUNT_ALREADY_VERIFIED(409, "U006", "이미 인증이 완료된 계정입니다."),
     VERIFICATION_TOKEN_EXPIRED(400, "U007", "인증 토큰이 만료되었습니다. 다시 회원가입을 시도하거나 인증 메일을 재발송해주세요."),
+    OUT_OF_POINT(409, "U008", "사용 가능한 포인트가 부족합니다."),
 
     // 스토어
     STORE_FORBIDDEN(403, "S001", "해당 스토어의 관리자가 아닙니다."),
@@ -45,6 +46,10 @@ public enum ErrorCode {
     // 주문
     ORDER_NOT_FOUND(404, "O001", "주문을 찾을 수 없습니다."),
     INVALID_ORDER_STATUS(400, "O002", "잘못된 주문 상태입니다."),
+    ORDER_FORBIDDEN(403, "O003", "주문은 일반 사용자만 가능합니다."),
+    ORDER_CART_EMPTY(400, "O004", "장바구니가 비어 있습니다. 주문할 상품이 없습니다."),
+    INVALID_POINT(400, "O005", "유효하지 않은 포인트입니다."),
+    ORDER_CANCEL_FORBIDDEN(403, "O006", "취소할 수 없는 주문 상태입니다."),
 
     // 리뷰 관련
     REVIEW_NOT_FOUND(404, "R001", "리뷰를 찾을 수 없습니다."),

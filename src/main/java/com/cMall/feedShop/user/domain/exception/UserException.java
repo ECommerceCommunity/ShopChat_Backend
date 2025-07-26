@@ -13,9 +13,4 @@ public class UserException extends BusinessException {
         super(errorCode, message);
     }
 
-    public static class UserNotFoundException extends UserException {
-        public UserNotFoundException() {
-            super(ErrorCode.USER_NOT_FOUND);
-        }
-    }
 }

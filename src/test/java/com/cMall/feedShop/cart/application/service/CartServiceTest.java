@@ -3,6 +3,7 @@ package com.cMall.feedShop.cart.application.service;
 import com.cMall.feedShop.cart.application.dto.request.CartItemCreateRequest;
 import com.cMall.feedShop.cart.application.dto.response.CartItemListResponse;
 import com.cMall.feedShop.cart.application.dto.response.CartItemResponse;
+import com.cMall.feedShop.cart.domain.exception.CartException;
 import com.cMall.feedShop.cart.domain.model.Cart;
 import com.cMall.feedShop.cart.domain.model.CartItem;
 import com.cMall.feedShop.cart.domain.repository.CartItemQueryRepository;
@@ -210,8 +211,8 @@ class CartServiceTest {
         // 불필요한 stubbing 제거
         given(productOptionRepository.findByOptionId(1L)).willReturn(Optional.empty());
 
-        ProductException.ProductOptionNotFoundException thrown = assertThrows(
-                ProductException.ProductOptionNotFoundException.class, () ->
+        ProductException thrown = assertThrows(
+                ProductException.class, () ->
                         cartService.addCartItem(createRequest, userDetails));
 
         assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.PRODUCT_OPTION_NOT_FOUND);
@@ -227,8 +228,8 @@ class CartServiceTest {
         given(productOptionRepository.findByOptionId(1L)).willReturn(Optional.of(productOption1));
         given(productImageRepository.findByImageId(1L)).willReturn(Optional.empty());
 
-        ProductException.ProductImageNotFoundException thrown = assertThrows(
-                ProductException.ProductImageNotFoundException.class, () ->
+        ProductException thrown = assertThrows(
+                ProductException.class, () ->
                         cartService.addCartItem(createRequest, userDetails));
 
         assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.PRODUCT_IMAGE_NOT_FOUND);
@@ -247,8 +248,8 @@ class CartServiceTest {
         given(productOptionRepository.findByOptionId(1L)).willReturn(Optional.of(lowStockOption));
         given(productImageRepository.findByImageId(1L)).willReturn(Optional.of(productImage1));
 
-        ProductException.OutOfStockException thrown = assertThrows(
-                ProductException.OutOfStockException.class, () ->
+        ProductException thrown = assertThrows(
+                ProductException.class, () ->
                         cartService.addCartItem(createRequest, userDetails));
 
         assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_STOCK);
@@ -267,8 +268,8 @@ class CartServiceTest {
         given(productOptionRepository.findByOptionId(1L)).willReturn(Optional.of(noStockOption));
         given(productImageRepository.findByImageId(1L)).willReturn(Optional.of(productImage1));
 
-        ProductException.OutOfStockException thrown = assertThrows(
-                ProductException.OutOfStockException.class, () ->
+        ProductException thrown = assertThrows(
+                ProductException.class, () ->
                         cartService.addCartItem(createRequest, userDetails));
 
         assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_STOCK);
@@ -452,8 +453,8 @@ class CartServiceTest {
                 .willReturn(Optional.of(existingCartItem));
 
         // when & then
-        ProductException.OutOfStockException thrown = assertThrows(
-                ProductException.OutOfStockException.class, () ->
+        ProductException thrown = assertThrows(
+                ProductException.class, () ->
                         cartService.addCartItem(createRequest, userDetails));
 
         assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.OUT_OF_STOCK);
@@ -473,5 +474,79 @@ class CartServiceTest {
         ReflectionTestUtils.setField(cartItem, "createdAt", LocalDateTime.now());
         ReflectionTestUtils.setField(cartItem, "updatedAt", LocalDateTime.now());
         return cartItem;
+    }
+
+    @Test
+    @DisplayName("장바구니 상품 삭제 성공")
+    void deleteCartItem_Success() {
+        // given
+        Long cartItemId = 1L;
+        CartItem cartItem = createCartItem(cartItemId, 1L, 1L, 2, true);
+
+        given(userDetails.getUsername()).willReturn("test@test.com");
+        given(userRepository.findByLoginId("test@test.com")).willReturn(Optional.of(user));
+        given(cartItemRepository.findByCartItemIdAndUserId(cartItemId, 1L))
+                .willReturn(Optional.of(cartItem));
+
+        // when
+        cartService.deleteCartItem(cartItemId, userDetails);
+
+        // then
+        verify(cartItemRepository, times(1)).delete(cartItem);
+        verify(cartItemRepository, times(1)).findByCartItemIdAndUserId(cartItemId, 1L);
+    }
+
+    @Test
+    @DisplayName("장바구니 상품 삭제 실패 - 사용자 없음")
+    void deleteCartItem_Fail_UserNotFound() {
+        // given
+        Long cartItemId = 1L;
+
+        given(userDetails.getUsername()).willReturn("test@test.com");
+        given(userRepository.findByLoginId("test@test.com")).willReturn(Optional.empty());
+
+        // when & then
+        BusinessException thrown = assertThrows(BusinessException.class, () ->
+                cartService.deleteCartItem(cartItemId, userDetails));
+
+        assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
+        verify(cartItemRepository, never()).findByCartItemIdAndUserId(any(), any());
+        verify(cartItemRepository, never()).delete(any());
+    }
+
+    @Test
+    @DisplayName("장바구니 상품 삭제 실패 - 장바구니 아이템 없음")
+    void deleteCartItem_Fail_CartItemNotFound() {
+        // given
+        Long cartItemId = 999L;
+
+        given(userDetails.getUsername()).willReturn("test@test.com");
+        given(userRepository.findByLoginId("test@test.com")).willReturn(Optional.of(user));
+        given(cartItemRepository.findByCartItemIdAndUserId(cartItemId, 1L))
+                .willReturn(Optional.empty());
+
+        // when & then
+        CartException thrown = assertThrows(CartException.class, () -> cartService.deleteCartItem(cartItemId, userDetails));
+
+        assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.CART_ITEM_NOT_FOUND);
+        verify(cartItemRepository, never()).delete(any());
+    }
+
+    @Test
+    @DisplayName("장바구니 상품 삭제 실패 - 다른 사용자 아이템")
+    void deleteCartItem_Fail_NotOwnerItem() {
+        // given
+        Long cartItemId = 1L;
+
+        given(userDetails.getUsername()).willReturn("test@test.com");
+        given(userRepository.findByLoginId("test@test.com")).willReturn(Optional.of(user));
+        given(cartItemRepository.findByCartItemIdAndUserId(cartItemId, 1L))
+                .willReturn(Optional.empty()); // 다른 사용자의 아이템이므로 조회되지 않음
+
+        // when & then
+        CartException thrown = assertThrows(CartException.class, () -> cartService.deleteCartItem(cartItemId, userDetails));
+
+        assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.CART_ITEM_NOT_FOUND);
+        verify(cartItemRepository, never()).delete(any());
     }
 }
